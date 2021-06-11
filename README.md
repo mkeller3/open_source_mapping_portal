@@ -27,9 +27,11 @@ The backend of the application is in the api folder. The backend is written usin
 
 #### PostgreSQL
 ![PostgreSQL Logo](https://duckduckgo.com/i/270e21a9.png)
+
 The database of the application uses [PostgreSQL](https://www.postgresql.org/).
 
 
 #### PostGIS
 ![PostGIS Logo](https://duckduckgo.com/i/a1feac83.png)
+
 It also uses the [PostGIS](ttps://postgis.net/) extenstion for geocapabilities. 
