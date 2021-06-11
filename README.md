@@ -14,7 +14,7 @@ The front end of the application is in the ui folder.
 The front end is written in the [Vue JS](https://github.com/vuejs/vue) framework. 
 
 
-####MapLibre JS 
+#### MapLibre JS 
 ![MapLibre JS Logo](https://avatars.githubusercontent.com/u/75709127?s=200&v=4)
 
 It also uses [MapLibre JS](https://github.com/maplibre/maplibre-gl-js) to render any mapping data.
