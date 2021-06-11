@@ -21,7 +21,19 @@ It also uses [MapLibre JS](https://github.com/maplibre/maplibre-gl-js) to render
 
 
 ## Back End
-The backend of the application is in the api folder. The backend is written using [Django](https://github.com/django/django) and [Django Rest Framework](https://github.com/encode/django-rest-framework).
+The backend of the application is in the api folder. 
+
+#### Django
+
+![Django Logo](https://avatars.githubusercontent.com/u/27804?s=200&v=4)
+
+The backend is written using [Django](https://github.com/django/django) 
+
+#### Django Rest Framework
+![Django Rest Framework Logo](https://www.django-rest-framework.org/img/logo.png)
+
+
+It uses the [Django Rest Framework](https://github.com/encode/django-rest-framework) to easily build out all the api endpoints.
 
 ## Database
 
