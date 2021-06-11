@@ -3,3 +3,6 @@ __pycache__
 db.sqlite3
 .coverage 
 .coverage.* 
+/bin
+/lib
+pyvenv.cfg
