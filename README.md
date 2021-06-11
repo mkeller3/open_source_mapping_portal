@@ -34,4 +34,4 @@ The database of the application uses [PostgreSQL](https://www.postgresql.org/).
 #### PostGIS
 ![PostGIS Logo](https://duckduckgo.com/i/a1feac83.png)
 
-It also uses the [PostGIS](ttps://postgis.net/) extenstion for geocapabilities. 
+It also uses the [PostGIS](https://postgis.net/) extenstion for geocapabilities. 
