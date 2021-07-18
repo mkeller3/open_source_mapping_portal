@@ -1,3 +1,226 @@
-from django.db import models
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
-# Create your models here.
+from django.db import models
+import uuid
+
+from django.db.models.fields.json import JSONField
+
+class mapData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    map_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True)
+    updated_username = models.CharField(max_length=300, db_index=True)
+    read_access_list = models.JSONField()
+    write_access_list = models.JSONField()
+    notification_access_list = models.JSONField()
+    bounding_box = models.JSONField()
+    tags = models.JSONField()
+    title = models.CharField(max_length=500)
+    basemap = models.CharField(max_length=50)
+    disclaimer = models.TextField(null=True)
+    description = models.TextField(null=True)
+    layers = models.JSONField()
+    searchable = models.BooleanField(default=True)
+    views = models.IntegerField(default=0)
+    image = models.TextField(null=True)
+    pitch = models.IntegerField(default=0)
+    bearing = models.IntegerField(default=0)
+
+class tableData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    table_id = models.CharField(max_length=50, db_index=True, unique=True)
+    title = models.CharField(max_length=50, db_index=True,)
+    created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True)
+    updated_username = models.CharField(max_length=300, db_index=True)
+    tags = models.JSONField()
+    description = models.TextField()
+    read_access_list = models.JSONField()
+    write_access_list = models.JSONField()
+    notification_access_list = models.JSONField()
+    views = models.IntegerField(default=1)
+    searchable = models.BooleanField(default=True)
+    style = models.JSONField(null=True)
+    size = models.FloatField()
+    rows = models.IntegerField()
+    sensitive = models.BooleanField()
+    retention_date = models.IntegerField()
+    image = models.TextField(null=True)
+    geometry_type = models.CharField(max_length=10)
+    bounding_box = models.JSONField()
+
+class appData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    app_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    app_type = models.CharField(max_length=50, db_index=True)
+    app_data = models.JSONField()
+    created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True)
+    updated_username = models.CharField(max_length=300, db_index=True)
+    read_access_list = models.JSONField()
+    write_access_list = models.JSONField()
+    notification_access_list = models.JSONField()
+    bounding_box = models.JSONField()
+    tags = models.JSONField()
+    title = models.CharField(max_length=500)
+    basemap = models.CharField(max_length=50)
+    disclaimer = models.TextField(null=True)
+    description = models.TextField()
+    searchable = models.BooleanField()
+    built_from_map = models.BooleanField()
+    map_id = models.CharField(max_length=50, db_index=True, null=True)
+    retention_date = models.IntegerField()
+    views = models.IntegerField(default=0)
+    image = models.TextField(null=True)
+    built_from_map = models.BooleanField()
+    map_id = models.UUIDField(default=uuid.uuid4, null=True)
+
+
+class alertData(models.Model):
+    alert_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    subject = models.CharField(max_length=500)
+    body = models.TextField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    username = models.CharField(max_length=300, db_index=True)
+    created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True)
+    updated_username = models.CharField(max_length=300, db_index=True)
+
+class analysisTrackingData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    analysis_type = models.CharField(max_length=50, db_index=True)
+    point_layer = models.CharField(max_length=50)
+    polygon_layer = models.CharField(max_length=50)
+    line_layer = models.CharField(max_length=50)
+    selection_layer = models.CharField(max_length=50)
+    created_time = models.DateTimeField(auto_now_add=True)
+
+class geosubscriptionData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True)
+    updated_username = models.CharField(max_length=300, db_index=True)
+    read_access_list = models.JSONField()
+    write_access_list = models.JSONField()
+    notification_access_list = models.JSONField()
+    geosubscription_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=500)
+    description = models.TextField()
+    searchable = models.BooleanField(default=True)
+    geosubscription_data = models.JSONField()
+
+class mapServiceData(models.Model):
+    map_service_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    display_name = models.CharField(max_length=300, unique=True)
+    table_name = models.CharField(max_length=300)
+    description = models.CharField(max_length=300)
+    provider = models.CharField(max_length=300)
+    refresh_interval = models.CharField(max_length=300)
+    tags = models.JSONField()
+    api_key = models.CharField(max_length=300, null=True)
+    map_type = models.CharField(max_length=10)
+    secure_layer = models.BooleanField()
+    geometry_type = models.CharField(max_length=10)
+    downloadable = models.BooleanField()
+    username = models.CharField(max_length=300, db_index=True)
+    created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True)
+    updated_username = models.CharField(max_length=300, db_index=True)
+    style = models.JSONField()
+    terms_and_conditions = models.TextField(max_length=1000, null=True)
+
+class mapSecurityData(models.Model):
+    map_service_security_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    group = models.CharField(max_length=300)
+    map_service = models.CharField(max_length=300)
+    username = models.CharField(max_length=300, db_index=True)
+    created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True)
+    updated_username = models.CharField(max_length=300, db_index=True)
+
+class mapServiceViewsData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    display_name = models.CharField(max_length=300)
+    referer_url = models.URLField()
+    created_time = models.DateTimeField(auto_now_add=True)
+
+class remoteUserData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    data_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    referer_url = models.URLField()
+    data = models.JSONField()
+    access_list = models.JSONField()
+    created_time = models.DateTimeField(auto_now_add=True)
+
+class tableJoinInformationData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    table_id = models.CharField(max_length=50, db_index=True, unique=True)
+    map_service = models.CharField(max_length=300)
+    map_field = models.CharField(max_length=300)
+    table_field = models.CharField(max_length=300)
+    latitude_field = models.CharField(max_length=300)
+    longitude_field = models.CharField(max_length=300)
+    created_time = models.DateTimeField(auto_now_add=True)
+
+class errorData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    log = models.TextField()
+    url = models.CharField(max_length=150, db_index=True)
+    created_time = models.DateTimeField(auto_now_add=True)
+
+class tableImportTrackingData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    file_type = models.CharField(max_length=50, db_index=True)
+    file_path = models.CharField(max_length=50)
+    table_id = models.CharField(max_length=50, db_index=True, unique=True)
+    created_time = models.DateTimeField(auto_now_add=True)
+
+class blockedUserData(models.Model):
+    blocked_user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    username = models.CharField(max_length=300, db_index=True)
+    created_time = models.DateTimeField(auto_now_add=True)
+
+class siteData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    url = models.CharField(max_length=150, db_index=True)
+    title = models.CharField(max_length=500)
+    description = models.TextField()
+    created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True)
+    updated_username = models.CharField(max_length=300, db_index=True)
+    read_access_list = models.JSONField()
+    write_access_list = models.JSONField()
+    notification_access_list = models.JSONField()
+    secure = models.BooleanField()
+    searchable = models.BooleanField()
+    retention_date = models.IntegerField()
+    image = models.TextField()
+    views = models.IntegerField()
+    site_information = models.JSONField()
+
+class groupData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    group_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    group_name = models.CharField(max_length=500)
+    created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True)
+    updated_username = models.CharField(max_length=300, db_index=True)
+    users = models.JSONField()
+    read_access_list = models.JSONField()
+    write_access_list = models.JSONField()
+    notification_access_list = models.JSONField()
+
+class pageTrackingData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    page = models.CharField(max_length=500, db_index=True)
+    created_time = models.DateTimeField(auto_now_add=True)
+
+class surveyData(models.Model):
+    username = models.CharField(max_length=300, db_index=True)
+    survey_type = models.CharField(max_length=100, db_index=True)
+    rating = models.IntegerField(db_index=True)
+    questions = models.JSONField()
+    created_time = models.DateTimeField(auto_now_add=True)

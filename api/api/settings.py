@@ -26,7 +26,7 @@ SECRET_KEY = 's&3+0endvm@j_)zn%p1(34723=m4c8gr%a-)j896o-ao7j=q2z'
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1']
-
+MAX_NUMBER_OF_API_RESULTS = 500
 
 # Application definition
 
@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'portal_api'
+    'portal_api',
+    'drf_yasg',
+    'rest_framework_tracking'
 ]
 
 MIDDLEWARE = [

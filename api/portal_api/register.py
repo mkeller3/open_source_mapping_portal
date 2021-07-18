@@ -1,9 +1,13 @@
+
+
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import UserSerializer
 from django.contrib.auth.models import User
 from drf_yasg.utils import swagger_auto_schema
+
 
 class registerView(APIView):
 
