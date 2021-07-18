@@ -11,10 +11,11 @@ from functools import reduce
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework_tracking.mixins import LoggingMixin
 
-columns = ['username','site_id','created_time',
+columns = ['username','site_id','created_time', 'site_information',
     'updated_time','updated_username','read_access_list','write_access_list',
-    'notification_access_list','bounding_box','tags','title',
-    'disclaimer','description','searchable','views','image']
+    'notification_access_list','tags','title',
+    'disclaimer','description','searchable','views','image',
+    'retention_date']
 
 # Class that will allow CRUD of sites
 class siteView(LoggingMixin, APIView):

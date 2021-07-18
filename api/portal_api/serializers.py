@@ -88,6 +88,22 @@ class siteDataImageSerializer(serializers.ModelSerializer):
         model = siteData
         fields = ['image']
 
+class geosubscriptionDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = geosubscriptionData
+        fields = '__all__'
+
+class geosubscriptionDataNoImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = geosubscriptionData
+        exclude = ['image']
+
+class geosubscriptionDataImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = geosubscriptionData
+        fields = ['image']
+
+
 class genericMapSerializer(serializers.Serializer):
 
     map_id = serializers.CharField()
@@ -103,6 +119,10 @@ class genericTableSerializer(serializers.Serializer):
 class genericSiteSerializer(serializers.Serializer):
 
     site_id = serializers.CharField()
+
+class genericGeosubscriptionSerializer(serializers.Serializer):
+
+    geosubscription_id = serializers.CharField()
 
 class mapServiceDataSerializer(serializers.ModelSerializer):
     class Meta:

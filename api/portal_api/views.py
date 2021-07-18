@@ -1,4 +1,4 @@
-from portal_api import maps, register, basic, application, administration, imports, tables, features, sites
+from portal_api import maps, register, basic, application, administration, imports, tables, features, sites, geosubscriptions
 
 # Register API
 registerView = register.registerView
@@ -52,3 +52,11 @@ personalSitesView = sites.personalSitesView
 allSitesView = sites.allSitesView
 analyticsSiteView = sites.analyticsSiteView
 duplicateSiteView = sites.duplicateSiteView
+
+# Sites API
+geosubscriptionView = geosubscriptions.geosubscriptionView
+geosubscriptionImageView = geosubscriptions.geosubscriptionImageView
+personalGeosubscriptionsView = geosubscriptions.personalGeosubscriptionsView
+allGeosubscriptionsView = geosubscriptions.allGeosubscriptionsView
+analyticsGeosubscriptionView = geosubscriptions.analyticsGeosubscriptionView
+duplicateGeosubscriptionView = geosubscriptions.duplicateGeosubscriptionView

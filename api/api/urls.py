@@ -28,7 +28,7 @@ schema_view = get_schema_view(
       description="API that can be used to create a mapping portal.",
       terms_of_service="",
       contact=openapi.Contact(email="michaelkeller03@gmail.com"),
-      license=openapi.License(name="BSD License"),
+      license=openapi.License(name="Apache License 2.0"),
    ),
    public=True,
    permission_classes=(permissions.AllowAny,),
