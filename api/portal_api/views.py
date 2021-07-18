@@ -27,6 +27,9 @@ allGroupsView = basic.allGroupsView
 
 # Administration API
 mapServiceConfigurationView = administration.mapServiceConfigurationView
+mapServiceSecurityConfigurationView = administration.mapServiceSecurityConfigurationView
+blockedUserView = administration.blockedUserView
+alertView = administration.alertView
 
 # Imports API
 importGeographicFileView = imports.importGeographicFileView

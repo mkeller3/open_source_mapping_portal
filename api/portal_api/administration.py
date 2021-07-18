@@ -167,5 +167,3 @@ class alertView(LoggingMixin, APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         details.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-# Widgets maybe

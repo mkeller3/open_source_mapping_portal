@@ -43,6 +43,9 @@ urlpatterns = [
     path('geosubscriptions/all_geosubscriptions/', views.allGeosubscriptionsView.as_view(), name='all_geosubscriptions'),
     path('geosubscriptions/analytics/', views.analyticsGeosubscriptionView.as_view(), name='geosubscription_analytics'),
     path('administration/map_service_congfiguration/', views.mapServiceConfigurationView.as_view(), name='map_service_congfiguration'),
+    path('administration/map_service_security/', views.mapServiceSecurityConfigurationView.as_view(), name='map_service_security'),
+    path('administration/blocked_user/', views.blockedUserView.as_view(), name='blocked_user'),
+    path('administration/alert/', views.alertView.as_view(), name='alert'),
     path('authentication/get_token/', obtain_auth_token, name="get_token"),
     path('register/register_user/', views.registerView.as_view(), name="register_user"),
 ]
