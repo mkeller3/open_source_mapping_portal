@@ -120,6 +120,10 @@ class genericSiteSerializer(serializers.Serializer):
 
     site_id = serializers.CharField()
 
+class genericRemoteDataSerializer(serializers.Serializer):
+
+    data_id = serializers.CharField()
+
 class genericGeosubscriptionSerializer(serializers.Serializer):
 
     geosubscription_id = serializers.CharField()
@@ -128,6 +132,12 @@ class mapServiceDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = mapServiceData
         fields = '__all__'
+
+class remoteDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = remoteUserData
+        fields = '__all__'
+
 
 class genericMapServiceSerializer(serializers.Serializer):
 

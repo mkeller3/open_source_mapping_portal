@@ -1,4 +1,4 @@
-from portal_api import maps, register, basic, application, administration, imports, tables, features, sites, geosubscriptions, tiles, services
+from portal_api import maps, register, basic, application, administration, imports, tables, features, sites, geosubscriptions, tiles, services, remote_data
 
 # Register API
 registerView = register.registerView
@@ -73,3 +73,6 @@ mapQueryView = services.mapQueryView
 portalTablesView = services.portalTablesView
 autocompleteView = services.autocompleteView
 wmsSearchView = services.wmsSearchView
+
+# Remote Data API
+remoteDataView = remote_data.remoteDataView

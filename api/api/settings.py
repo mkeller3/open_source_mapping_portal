@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 import os
+from portal_api import constants
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -95,10 +96,10 @@ WSGI_APPLICATION = 'api.wsgi.application'
 DATABASES = {
    'default': {
        'ENGINE': 'django.db.backends.postgresql',
-       'NAME': 'mapping_portal',
-       'USER': 'postgres',
-       'PASSWORD': 'postgres',
-       'HOST': 'localhost',
+       'NAME': constants.api_db,
+       'USER': constants.api_db_user,
+       'PASSWORD': constants.api_db_pwd,
+       'HOST': constants.api_db_host,
        'PORT': '5432',
    }
 }
