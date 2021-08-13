@@ -73,10 +73,47 @@ class mapQueryView(LoggingMixin, APIView):
 class portalTablesView(LoggingMixin, APIView):
     permission_classes = (IsAuthenticated),
 
-    @swagger_auto_schema(operation_description="Get an array of all prebuilt maps within Mapping Portal")
+    @swagger_auto_schema(query_serializer=portalTablesSerializer, operation_description="Get an array of all prebuilt tables within Mapping Portal")
     def get(self, request):
-        serializer = mapServiceDataSerializer(mapServiceData.objects.all(), many=True)
+        serializer = portalTablesSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+        user_groups = get_user_groups(request.user.username) 
+        
+        if 'search' in serializer.validated_data:
+            search_term = serializer.validated_data['search']
+            map_services = mapServiceData.objects.filter(Q(display_name_icontains=search_term)|Q(description_icontains=search_term))
+        else:
+            map_services = mapServiceData.objects.all()
+
+        map_security = mapSecurityData.objects.all()
+
+        accessible_maps = get_accessible_maps(map_security, user_groups)
+
+        for map in map_services:
+            if map['secure'] == True and map['display_name'] not in accessible_maps:
+                map_services = map_services.exclude(pk=map['id'])
+
+        serializer = mapServiceDataSerializer(map_services, many=True)
         return Response(serializer.data)
+
+# Portal Table
+class portalTableView(LoggingMixin, APIView):
+    permission_classes = (IsAuthenticated),
+
+    @swagger_auto_schema(query_serializer=portalTableSerializer, operation_description="Get a prebuilt table within Mapping Portal")
+    def get(self, request):
+        serializer = portalTableSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+        user_groups = get_user_groups(request.user.username) 
+        try:
+            mapServiceData.objects.get(table_name=serializer.validated_data['table_name'])
+        except mapServiceData.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if serializer.validated_data['table_name'] not in user_groups:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        details = mapServiceData.objects.get(table_name=serializer.validated_data['table_name'])
+        return Response(details)
+
 
 # Autocomplete
 
@@ -95,9 +132,3 @@ class portalTablesView(LoggingMixin, APIView):
 # Download Data
 
 # map service view
-
-# portal table
-
-# portal tables
-
-# Autocomplete

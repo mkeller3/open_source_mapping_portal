@@ -258,3 +258,11 @@ class apiSearchSerializer(serializers.Serializer):
 class addressSerializer(serializers.Serializer):
 
     addresses = serializers.JSONField()
+
+class portalTableSerializer(serializers.Serializer):
+
+    table_name = serializers.CharField()
+
+class portalTablesSerializer(serializers.Serializer):
+
+    search = serializers.CharField(required=False)

@@ -337,3 +337,10 @@ def geocode_address(address: object):
             geojson_feature['properties']['accuracy'] = results['features'][0]['properties']['accuracy']
 
     return geojson_feature
+
+def get_accessible_maps(rules, user_groups):
+    secure_maps_array = []
+    for rule in rules:
+        if rule['group'].lower() in user_groups:
+            secure_maps_array.append(rule['map_service'])
+    return secure_maps_array
