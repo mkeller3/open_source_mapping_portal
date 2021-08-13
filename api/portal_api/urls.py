@@ -51,6 +51,7 @@ urlpatterns = [
     path('services/map_query/', views.mapQueryView.as_view(), name='map_query'),
     path('services/portal_tables/', views.portalTablesView.as_view(), name='portal_tables'),
     path('services/autocomplete/', views.autocompleteView.as_view(), name='autocomplete'),
+    path('services/wms_search/', views.wmsSearchView.as_view(), name='wms_search'),
     path('authentication/get_token/', obtain_auth_token, name="get_token"),
     path('register/register_user/', views.registerView.as_view(), name="register_user"),
 ]

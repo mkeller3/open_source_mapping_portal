@@ -273,3 +273,7 @@ class autocompleteSerializer(serializers.Serializer):
     table_type = serializers.CharField()
     table_column = serializers.CharField()
     table_value = serializers.CharField()
+
+class wmsSearchSerializer(serializers.Serializer):
+
+    url = serializers.URLField()

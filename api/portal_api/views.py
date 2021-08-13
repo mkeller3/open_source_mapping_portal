@@ -72,3 +72,4 @@ geocodeView = services.geocodeView
 mapQueryView = services.mapQueryView
 portalTablesView = services.portalTablesView
 autocompleteView = services.autocompleteView
+wmsSearchView = services.wmsSearchView
