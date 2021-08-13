@@ -1,5 +1,4 @@
 from django.conf import settings
-from rest_framework.fields import NullBooleanField
 from .serializers import *
 from .constants import *
 from .models import *
@@ -10,7 +9,6 @@ import psycopg2
 from psycopg2 import sql
 from psycopg2 import pool
 from psycopg2.extras import RealDictCursor
-import sys
 import pandas as pd
 import requests
 import json
@@ -215,9 +213,7 @@ def download_esri_service_data(url, table_id):
         r = requests.get(f"{url}/query?where=1=1&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson")
 
         data = r.json()  
-
-        print(data)      
-
+        
         with open(f'{media_location}/{table_id}.geojson', 'w') as json_file:
             json.dump(data, json_file)
 

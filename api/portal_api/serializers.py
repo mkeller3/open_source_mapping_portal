@@ -200,6 +200,21 @@ class tableColumnsSerializer(serializers.Serializer):
     table_type = serializers.CharField()
 
 class tableQuerySerializer(serializers.Serializer):
+    geometry_type_choices = ( 
+        ("POINT", "POINT"), 
+        ("LINESTRING", "LINESTRING"), 
+        ("POLYGON", "POLYGON")
+    )
+
+    spatial_relationship_choices = (
+        ("ST_Intersects", "ST_Intersects"), 
+        ("ST_Crosses", "ST_Crosses"), 
+        ("ST_Within", "ST_Within"), 
+        ("ST_Contains", "ST_Contains"), 
+        ("ST_Overlaps", "ST_Overlaps"), 
+        ("ST_Disjoint", "ST_Disjoint"), 
+        ("ST_Touches", "ST_Touches"),
+    )
     table_name = serializers.CharField()
     table_type = serializers.CharField()
     where = serializers.JSONField(required=False)
@@ -209,6 +224,10 @@ class tableQuerySerializer(serializers.Serializer):
         MinValueValidator(1)
     ])
     offset = serializers.IntegerField(required=False)
+    return_geometry = serializers.BooleanField(default=True)
+    coordinates = serializers.CharField(required=False)
+    geometry_type = serializers.ChoiceField(required=False, choices=geometry_type_choices)
+    spatial_relationship = serializers.ChoiceField(required=False, choices=spatial_relationship_choices)
 
 class pointFileSerializer(serializers.Serializer):
 

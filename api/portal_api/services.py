@@ -70,7 +70,7 @@ class mapQueryView(LoggingMixin, APIView):
             cur.close()
             conn.close()
         
-        return Response(data)
+            return Response(data)
 
 # Portal Tables
 class portalTablesView(LoggingMixin, APIView):
@@ -93,7 +93,6 @@ class portalTablesView(LoggingMixin, APIView):
         accessible_maps = get_accessible_maps(map_security, user_groups)
 
         for map in map_services:
-            print(map)
             if map.secure_layer == True and map.display_name not in accessible_maps:
                 map_services = map_services.exclude(pk=map.id)
 
