@@ -1,3 +1,4 @@
+from rest_framework.compat import distinct
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -9,6 +10,7 @@ from django.db.models import Q
 from functools import reduce
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework_tracking.mixins import LoggingMixin
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class geocodeView(LoggingMixin, APIView):
@@ -116,6 +118,40 @@ class portalTableView(LoggingMixin, APIView):
 
 
 # Autocomplete
+class autocompleteView(LoggingMixin, APIView):
+    permission_classes = (IsAuthenticated),
+
+    @swagger_auto_schema(query_serializer=autocompleteSerializer, operation_description="Get an array of possible values for a table within Mapping Portal.")
+    def get(self, request):
+        serializer = autocompleteSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+        user_groups = get_user_groups(request.user.username) 
+
+        if serializer.validated_data['table_type'] == 'user_data':
+            try:
+                tableData.objects.get(table_id=serializer.validated_data['table'])
+            except ObjectDoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            try:
+                tableData.objects.filter(reduce(lambda x, y: x | y, [Q(read_access_list__icontains=group,table_id=serializer.validated_data['table']) for group in user_groups]))
+            except ObjectDoesNotExist:
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
+        elif serializer.validated_data['table_type'] == 'map_layer':
+            try:
+                secure_layer = mapServiceData.objects.get(table_name=serializer.validated_data['table']).secure_layer
+            except mapServiceData.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            if secure_layer:
+                if serializer.validated_data['table'] not in user_groups:
+                    return Response(status=status.HTTP_401_UNAUTHORIZED)
+        
+        conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute(sql.SQL("SELECT DISTINCT({column}) FROM {table} WHERE LOWER(CAST({column} AS text)) LIKE LOWER('%{value}%') LIMIT 10;").format(table=sql.SQL(serializer.validated_data['table']),value=sql.SQL(serializer.validated_data['table_value']),column=sql.SQL(serializer.validated_data['table_column'])))
+        distinct_values = cur.fetchall()
+        cur.close()
+        conn.close()
+        return Response({"values": distinct_values})
 
 # WMS Search
 

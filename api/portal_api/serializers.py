@@ -266,3 +266,10 @@ class portalTableSerializer(serializers.Serializer):
 class portalTablesSerializer(serializers.Serializer):
 
     search = serializers.CharField(required=False)
+
+class autocompleteSerializer(serializers.Serializer):
+
+    table = serializers.CharField()
+    table_type = serializers.CharField()
+    table_column = serializers.CharField()
+    table_value = serializers.CharField()

@@ -71,3 +71,4 @@ tilesView = tiles.tilesView
 geocodeView = services.geocodeView
 mapQueryView = services.mapQueryView
 portalTablesView = services.portalTablesView
+autocompleteView = services.autocompleteView
