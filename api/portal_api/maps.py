@@ -79,9 +79,13 @@ class mapView(LoggingMixin, APIView):
         serializer.is_valid(raise_exception=True)
         user_groups = get_user_groups(request.user.username) 
         try:
+            details = mapData.objects.get(app_id=request.data['map_id'])
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        try:
              details = mapData.objects.get(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,map_id=serializer.validated_data['map_id']) for group in user_groups]))
         except mapData.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         details.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

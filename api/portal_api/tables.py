@@ -68,9 +68,13 @@ class tableView(LoggingMixin, APIView):
         serializer.is_valid(raise_exception=True)
         user_groups = get_user_groups(request.user.username) 
         try:
-             details = tableData.objects.get(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,table_id=serializer.validated_data['table_id']) for group in user_groups]))
+            details = tableData.objects.get(table_id=request.data['table_id'])
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        try:
+             details = tableData.objects.get(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,table_id=serializer.validated_data['table_id']) for group in user_groups]))
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         details.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
