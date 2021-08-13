@@ -15,19 +15,18 @@ from rest_framework_tracking.mixins import LoggingMixin
 class featureColumnsView(LoggingMixin, APIView):
     permission_classes = (IsAuthenticated),
 
-    @swagger_auto_schema(operation_description="Get an tables columns with in Mapping Portal")
-    def post(self, request):
-        serializer = tableColumnsSerializer(data=request.data)
+    @swagger_auto_schema(query_serializer=tableColumnsSerializer, operation_description="Get an tables columns with in Mapping Portal")
+    def get(self, request):
+        serializer = tableColumnsSerializer(data=request.GET)
         serializer.is_valid(raise_exception=True)
         user_groups = get_user_groups(request.user.username) 
 
         if serializer.validated_data['table_type'] == 'user_data':
             try:
-                details = tableData.objects.filter(reduce(lambda x, y: x | y, [Q(read_access_list__icontains=group,table_id=serializer.validated_data['table_name']) for group in user_groups]))
+                tableData.objects.filter(reduce(lambda x, y: x | y, [Q(read_access_list__icontains=group,table_id=serializer.validated_data['table_name']) for group in user_groups]))
             except tableData.DoesNotExist:
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-            conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host)
+            conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
             cur = conn.cursor(cursor_factory=RealDictCursor)
             cur.execute(sql.SQL("SELECT column_name,data_type FROM information_schema.columns WHERE table_name = '{table}' AND data_type != 'USER-DEFINED' And column_name != 'gid';").format(table=sql.SQL(serializer.validated_data['table_name'])))
             columns = cur.fetchall()
@@ -40,12 +39,11 @@ class featureColumnsView(LoggingMixin, APIView):
 class featureQueryView(LoggingMixin, APIView):
     permission_classes = (IsAuthenticated),
 
-    @swagger_auto_schema(operation_description="Query a table within Mapping Portal")
-    def post(self, request):
-        serializer = tableColumnsSerializer(data=request.data)
+    @swagger_auto_schema(query_serializer=tableQuerySerializer, operation_description="Query a table within Mapping Portal")
+    def get(self, request):
+        serializer = tableQuerySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_groups = get_user_groups(request.user.username) 
-        format = serializer.validated_data['format']
 
         if serializer.validated_data['table_type'] == 'user_data':
             try:
@@ -53,13 +51,12 @@ class featureQueryView(LoggingMixin, APIView):
             except tableData.DoesNotExist:
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-            conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host)
+            conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
             cur = conn.cursor(cursor_factory=RealDictCursor)
-            if format == 'geojson':
-                cur.execute(sql.SQL("SELECT json_build_object('type', 'FeatureCollection', 'features', json_agg(ST_AsGeoJSON({table}.*)::json)) FROM {table};").format(table=sql.SQL(serializer.validated_data['table_name'])))
-                data = cur.fetchone()['json_build_object']
-            # elif format == 'json':
-                # TODO
+
+            cur.execute(sql.SQL("SELECT json_build_object('type', 'FeatureCollection', 'features', json_agg(ST_AsGeoJSON({table}.*)::json)) FROM {table};").format(table=sql.SQL(serializer.validated_data['table_name'])))
+            data = cur.fetchone()['json_build_object']
+
             cur.close()
             conn.close()
         

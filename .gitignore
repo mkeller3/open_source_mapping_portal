@@ -1,1 +1,7 @@
 /.vscode
+db.sqlite3
+*.log
+*.pot
+*.pyc
+__pycache__
+/api/portal_api/migrations/

@@ -1,17 +1,32 @@
 from django.conf import settings
+from rest_framework.fields import NullBooleanField
 from .serializers import *
 from .constants import *
-from .models import tableData
+from .models import *
 import random
 import string
 import subprocess
 import psycopg2
 from psycopg2 import sql
+from psycopg2 import pool
 from psycopg2.extras import RealDictCursor
 import sys
 import pandas as pd
 import requests
 import json
+import mercantile
+import requests
+
+user_data_db_pool = psycopg2.pool.SimpleConnectionPool(
+    1,
+    20,
+    dbname='mapping_portal',
+    user='postgres',
+    host=api_db_host,
+    password=api_db_pwd,
+    port='5432',
+    options="-c search_path=user_data,postgis"
+)
  
 def table_id_generator():
     return ''.join(random.choice(string.ascii_letters) for x in range(50)).lower()
@@ -19,7 +34,7 @@ def table_id_generator():
 def load_geographic_data_to_server(upload_settings):
     table_name = upload_settings['table_id']
     file_path = upload_settings['file']
-    subprocess.call(f'ogr2ogr -f "PostgreSQL" "PG:host={api_db_host} user={api_db_user} dbname={data_db} password={api_db_pwd}" "{file_path}" -lco SCHEMA={data_db_schema} GEOMETRY_NAME=geom -lco FID=gid -lco PRECISION=no -nln {table_name} -overwrite', shell=True)
+    subprocess.call(f'ogr2ogr -f "PostgreSQL" "PG:host={api_db_host} user={api_db_user} dbname={data_db} password={api_db_pwd}" "{file_path}" -lco GEOMETRY_NAME=geom -lco FID=gid -lco PRECISION=no -nln {data_db_schema}.{table_name} -overwrite', shell=True)
 
 def get_user_groups(username):
     groups = []
@@ -34,7 +49,7 @@ def delete_data_backend(table_id, table_name):
         file_name = os.path.splitext(file)[0]
         if file_name == table_name:
             os.remove(media_location+file)
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host)
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(sql.SQL("DROP TABLE IF EXISTS {table}").format(table=sql.SQL(table_id)))
     conn.commit()
@@ -42,7 +57,7 @@ def delete_data_backend(table_id, table_name):
     conn.close()
 
 def add_table_into_mapping_portal(table_information):
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host)
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(sql.SQL("SELECT pg_relation_size('{table}') as size;").format(table=sql.SQL(table_information['table_id'])))
     results = cur.fetchone()
@@ -52,7 +67,10 @@ def add_table_into_mapping_portal(table_information):
     table_information['rows'] = results['count']
     cur.close()
     conn.close()
-    
+
+    # TODO
+    table_information['bounding_box'] = []
+
     del table_information['file']
     if 'latitude_field' in table_information:
         del table_information['latitude_field']
@@ -97,7 +115,7 @@ def load_point_data_to_server(table_information):
 
     create_table_sql += ");"
 
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host)
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(create_table_sql)
     conn.commit()
@@ -112,7 +130,7 @@ def load_point_data_to_server(table_information):
     add_lat_lng_columns(table_id, table_information['latitude_field'], table_information['longitude_field'])
 
 def add_lat_lng_columns(table_id, latitude, longitude):
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host)
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(sql.SQL("SELECT AddGeometryColumn('{table_id}','geom', '4326', 'POINT',2);").format(table_id=sql.SQL(table_id)))
     cur.execute(sql.SQL("UPDATE {table_id} SET geom = ST_SetSRID(ST_MakePoint({longitude}, {latitude}),4326);").format(table_id=sql.SQL(table_id), latitude=sql.SQL(latitude), longitude=sql.SQL(longitude)))
@@ -122,7 +140,7 @@ def add_lat_lng_columns(table_id, latitude, longitude):
     conn.close()
 
 def validate_geometry(table_id):
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host)
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(sql.SQL("DELETE FROM {table_id} WHERE geom is NULL;").format(table_id=sql.SQL(table_id)))
     cur.execute(sql.SQL("UPDATE {table_id} SET geom=ST_MakeValid(geom);").format(table_id=sql.SQL(table_id)))
@@ -131,7 +149,7 @@ def validate_geometry(table_id):
     conn.close()
     
 def index_table(table_id):
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host)
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(sql.SQL("CREATE INDEX {table_id_index} ON {table_id} USING GIST(geom);").format(table_id_index=sql.SQL(f"{table_id}_spatial_index"), table_id=sql.SQL(table_id)))
     cur.execute(sql.SQL("CLUSTER {table_id} USING {table_id_index};").format(table_id_index=sql.SQL(f"{table_id}_spatial_index"), table_id=sql.SQL(table_id)))
@@ -141,7 +159,7 @@ def index_table(table_id):
     conn.close()
 
 def clean_columns(table_id):
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host)
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(sql.SQL("SELECT column_name,data_type FROM information_schema.columns WHERE table_name = '{table_id}' AND data_type != 'USER-DEFINED' And column_name != 'gid';").format(table_id=sql.SQL(table_id)))
     columns = cur.fetchall()
@@ -234,3 +252,88 @@ def get_limit_and_offset(serializer):
         if 'limit' in serializer.validated_data:
                 limit = serializer.validated_data['limit'] + serializer.validated_data['offset']
     return limit, offset
+
+def sqlToPbf(database, table_name, z, x, y, fields):
+    bounds = mercantile.xy_bounds(x,y,z) 
+    old_fields = fields.replace(',','","')
+    fields =f'{old_fields}'
+
+    vector_tile_query = """
+            WITH
+            bounds AS (
+                SELECT
+                    ST_Segmentize(
+                        ST_MakeEnvelope(
+                            {xmin},
+                            {ymin},
+                            {xmax},
+                            {ymax},
+                            {epsg}
+                        ),
+                        {seg_size}
+                    ) AS geom
+            ),
+            mvtgeom AS (
+                SELECT ST_AsMVTGeom(
+                    ST_Transform(t.geom, {epsg}),
+                    bounds.geom,
+                    {tile_resolution},
+                    {tile_buffer}
+                ) AS geom, {fields}
+                FROM {database}.{table_name} t, bounds
+                WHERE ST_Intersects(
+                    ST_Transform(t.geom, 4326),
+                    ST_Transform(bounds.geom, 4326)
+                ) LIMIT {limit}
+            )
+            SELECT NULL as id,ST_AsMVT(mvtgeom.*) FROM mvtgeom
+        """
+    sql_query = vector_tile_query.format(
+        xmin=bounds.left,
+        ymin=bounds.bottom,
+        xmax=bounds.right,
+        ymax=bounds.top,
+        epsg='3857',
+        seg_size=bounds.right - bounds.left,
+        tile_resolution=settings.TILE_RESOLUTION,
+        tile_buffer=settings.TILE_BUFFER,
+        fields=fields,
+        table_name=table_name,
+        limit=settings.MAX_FEATURES_PER_TILE,
+        database=database
+    )
+
+    if database == 'user_data':
+        ps_connection = user_data_db_pool.getconn()
+
+        if ps_connection:
+            cur = ps_connection.cursor()
+            cur.execute(sql_query)
+            tile = cur.fetchall()[-1][-1]
+
+            if database == 'user_data':
+                user_data_db_pool.putconn(ps_connection)
+
+    return tile
+
+def geocode_address(address: object):
+    first_address = address['address']
+    city = address['city']
+    state = address['state']
+    zip_code = address['zip']
+    r = requests.get(f'https://api.mapbox.com/geocoding/v5/mapbox.places/{first_address}, {city} {state} {zip_code}.json?access_token={mapbox_token}')
+    results = r.json()
+    geojson_feature = {
+        "type": "Feature",
+        "geometry": None,
+        "properties": {
+            "accuracy": None
+        }    
+    }
+    if results['features'][0]:
+        geojson_feature['geometry'] = results['features'][0]['geometry']
+        geojson_feature['properties']['place_name'] = results['features'][0]['place_name']
+        if 'accuracy' in results['features'][0]['properties']:
+            geojson_feature['properties']['accuracy'] = results['features'][0]['properties']['accuracy']
+
+    return geojson_feature

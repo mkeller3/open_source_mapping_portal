@@ -9,7 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework_tracking.mixins import LoggingMixin
 from django.core.files.storage import FileSystemStorage
 
-# Import geographic file
+# Import geographic file such as geojson, shp, etc
 class importGeographicFileView(LoggingMixin, APIView):
     permission_classes = (IsAuthenticated),
 
@@ -23,73 +23,79 @@ class importGeographicFileView(LoggingMixin, APIView):
             return Response({"error":f"Username is not in write_access_list. Add {str(request.user.username)} to write_access_list and try again."}, status=status.HTTP_400_BAD_REQUEST)
         
         file_name = serializer.validated_data['file_name']
-        table_id = table_id_generator()
+        temp_name = table_id_generator()
 
         try:
             for f in request.FILES.getlist('upload_files'):
                 fs = FileSystemStorage()
-                fs.save(f.name, f)
+                fs.save(temp_name + f.name, f)
 
             valid_upload_files = False
-
             for file in os.listdir(media_location):
-                file_extension = os.path.splitext(file)[1]
-                file_name = os.path.splitext(file)[0]
-                formatted_file_name = file_name.replace(' ','_').replace('/','_')
-                os.rename(media_location+file_name+file_extension,media_location+formatted_file_name+file_extension)
-
-                if file_extension.lower() in ['.shp', '.tab', '.geojson', '.json', '.kml']:  
-                    valid_upload_files = True
-
-            if valid_upload_files:
-
-                for file in os.listdir(media_location):
+                if temp_name in os.path.splitext(file)[0]:
+                    table_id = table_id_generator()
+                    file_extension = os.path.splitext(file)[1]
                     file_name = os.path.splitext(file)[0]
+                    formatted_file_name = file_name.replace(' ','_').replace('/','_')
+                    os.rename(media_location+file_name+file_extension,media_location+formatted_file_name+file_extension)
 
-                    if file_extension.lower() in ['.shp', '.tab', '.geojson', '.json', '.kml']:                        
+                    if file_extension.lower() in ['.shp', '.tab', '.geojson', '.json', '.kml', '.gml']:  
+                        valid_upload_files = True
 
-                        table_information = {
-                            'username': request.user.username,
-                            'table_id': table_id,
-                            'table_name': serializer.validated_data['table_name'],
-                            'updated_username': request.user.username,
-                            'tags': serializer.validated_data['tags'],
-                            'description': serializer.validated_data['description'],
-                            'read_access_list': serializer.validated_data['read_access_list'],
-                            'write_access_list': serializer.validated_data['write_access_list'],
-                            'searchable': serializer.validated_data['searchable'],
-                            'sensitive': serializer.validated_data['sensitive'],
-                            'retention_date': serializer.validated_data['retention_date'],
-                            "file": media_location+file_name+file_extension,
-                        }
-
-                        load_geographic_data_to_server(table_information)
-
-                        clean_table(table_information['table_id'])
-
-                        add_table_into_mapping_portal(table_information)
+                    if valid_upload_files:
 
                         for file in os.listdir(media_location):
+                            file_name = os.path.splitext(file)[0]                     
+
+                            table_information = {
+                                'username': request.user.username,
+                                'table_id': table_id,
+                                'title': serializer.validated_data['title'],
+                                'updated_username': request.user.username,
+                                'tags': serializer.validated_data['tags'],
+                                'description': serializer.validated_data['description'],
+                                'read_access_list': serializer.validated_data['read_access_list'],
+                                'write_access_list': serializer.validated_data['write_access_list'],
+                                'notification_access_list': serializer.validated_data['notification_access_list'],
+                                'searchable': serializer.validated_data['searchable'],
+                                'sensitive': serializer.validated_data['sensitive'],
+                                'retention_date': serializer.validated_data['retention_date'],
+                                "file": media_location+file_name+file_extension,
+                            }
+
+                            load_geographic_data_to_server(table_information)
+
+                            clean_table(table_information['table_id'])
+
+                            add_table_into_mapping_portal(table_information)
+
+                            for file in os.listdir(media_location):
+                                if temp_name in os.path.splitext(file)[0]:
+                                    os.remove(media_location+file)
+
+                        return Response({'table_id':table_id})
+                    else:
+                        delete_data_backend(table_id, file_name)
+                        for file in os.listdir(media_location):
                             file_name = os.path.splitext(file)[0]
-                            if file_name == serializer.validated_data['table_name']:
+                            if file_name == table_id:
                                 os.remove(media_location+file)
 
-
-                return Response({'table_id':table_id})
-            else:
-                delete_data_backend(table_id, file_name)
-
-                return Response({"error":f"You have not upload a valid geogrpahic file type. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({"error":f"You have not upload a valid geogrpahic file type. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
-            delete_data_backend(table_id, file_name)
+            if 'table_id' in locals():
+                delete_data_backend(table_id, file_name)
+            if temp_name:
+                for file in os.listdir(media_location):
+                    if temp_name in os.path.splitext(file)[0]:
+                        os.remove(media_location+file)
             return Response({
                 "error":str(e),
                 "line_number": exc_tb.tb_lineno,
-                "file": os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# Import point file
+# Import point file from file
 class importPointFileView(LoggingMixin, APIView):
     permission_classes = (IsAuthenticated),
 
@@ -131,7 +137,7 @@ class importPointFileView(LoggingMixin, APIView):
                         table_information = {
                             'username': request.user.username,
                             'table_id': table_id,
-                            'table_name': serializer.validated_data['table_name'],
+                            'title': serializer.validated_data['title'],
                             'updated_username': request.user.username,
                             'tags': serializer.validated_data['tags'],
                             'description': serializer.validated_data['description'],
@@ -172,9 +178,9 @@ class importPointFileView(LoggingMixin, APIView):
                 "file": os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# Import geo data from csv
+# Import geographic data from csv and join on column to pre_built map_service
 
-# Import geo data from url
+# Import geographic data from url and join on column to pre_built map_service
 
 # Import point data from url
 class importPointUrlView(LoggingMixin, APIView):
@@ -195,7 +201,7 @@ class importPointUrlView(LoggingMixin, APIView):
             table_information = {
                 'username': request.user.username,
                 'table_id': table_id,
-                'table_name': serializer.validated_data['table_name'],
+                'title': serializer.validated_data['title'],
                 'updated_username': request.user.username,
                 'tags': serializer.validated_data['tags'],
                 'description': serializer.validated_data['description'],
@@ -233,11 +239,11 @@ class importPointUrlView(LoggingMixin, APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# Import json geo data
+# Import geographic file in json format and join on column to pre_built map_service
 
 # Import json point data
 
-# Import data from esri
+# Import data from esri url
 class importEsriUrlView(LoggingMixin, APIView):
     permission_classes = (IsAuthenticated),
 
@@ -256,7 +262,7 @@ class importEsriUrlView(LoggingMixin, APIView):
             table_information = {
                 'username': request.user.username,
                 'table_id': table_id,
-                'table_name': serializer.validated_data['table_name'],
+                'title': serializer.validated_data['title'],
                 'updated_username': request.user.username,
                 'tags': serializer.validated_data['tags'],
                 'description': serializer.validated_data['description'],

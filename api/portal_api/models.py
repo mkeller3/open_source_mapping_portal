@@ -77,7 +77,6 @@ class appData(models.Model):
     built_from_map = models.BooleanField()
     map_id = models.UUIDField(default=uuid.uuid4, null=True)
 
-
 class alertData(models.Model):
     alert_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     subject = models.CharField(max_length=500)

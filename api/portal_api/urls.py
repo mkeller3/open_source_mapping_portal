@@ -46,6 +46,10 @@ urlpatterns = [
     path('administration/map_service_security/', views.mapServiceSecurityConfigurationView.as_view(), name='map_service_security'),
     path('administration/blocked_user/', views.blockedUserView.as_view(), name='blocked_user'),
     path('administration/alert/', views.alertView.as_view(), name='alert'),
+    path('tiles/<str:database>/<str:table_name>/<int:z>/<int:x>/<int:y>.pbf', views.tilesView.as_view(), name='tiles'),
+    path('services/geocode/', views.geocodeView.as_view(), name='geocode'),
+    path('services/map_query/', views.mapQueryView.as_view(), name='map_query'),
+    path('services/portal_tables/', views.portalTablesView.as_view(), name='portal_tables'),
     path('authentication/get_token/', obtain_auth_token, name="get_token"),
     path('register/register_user/', views.registerView.as_view(), name="register_user"),
 ]

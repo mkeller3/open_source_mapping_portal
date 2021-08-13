@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,8 +26,13 @@ SECRET_KEY = 's&3+0endvm@j_)zn%p1(34723=m4c8gr%a-)j896o-ao7j=q2z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['*']
 MAX_NUMBER_OF_API_RESULTS = 500
+TILE_RESOLUTION=4096
+TILE_BUFFER=256
+MAX_FEATURES_PER_TILE=10000
+MAX_NUMBER_OF_FEATURE_RESULTS = 50000
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
 
@@ -41,12 +47,14 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'portal_api',
     'drf_yasg',
-    'rest_framework_tracking'
+    'rest_framework_tracking',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -133,3 +141,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+MEDIA_ROOT = f"{os.getcwd()}/api/media/"

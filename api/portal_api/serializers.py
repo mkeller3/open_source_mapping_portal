@@ -175,11 +175,12 @@ class geographicFileSerializer(serializers.Serializer):
 
     upload_files = serializers.FileField()
     file_name = serializers.CharField()
-    table_name = serializers.CharField(max_length=300)
+    title = serializers.CharField(max_length=300)
     tags = serializers.JSONField()
     description = serializers.CharField(max_length=1000)
     read_access_list = serializers.JSONField()
     write_access_list = serializers.JSONField()
+    notification_access_list = serializers.JSONField()
     searchable = serializers.BooleanField()
     sensitive = serializers.BooleanField()
     retention_date = serializers.IntegerField()
@@ -191,18 +192,24 @@ class tableColumnsSerializer(serializers.Serializer):
 class tableQuerySerializer(serializers.Serializer):
     table_name = serializers.CharField()
     table_type = serializers.CharField()
-    format = serializers.CharField()
     where = serializers.JSONField(required=False)
+    fields = serializers.CharField(required=False)
+    limit = serializers.IntegerField(required=False,validators=[
+        MaxValueValidator(settings.MAX_NUMBER_OF_FEATURE_RESULTS),
+        MinValueValidator(1)
+    ])
+    offset = serializers.IntegerField(required=False)
 
 class pointFileSerializer(serializers.Serializer):
 
     upload_files = serializers.FileField()
     file_name = serializers.CharField()
-    table_name = serializers.CharField(max_length=300)
+    title = serializers.CharField(max_length=300)
     tags = serializers.JSONField()
     description = serializers.CharField(max_length=1000)
     read_access_list = serializers.JSONField()
     write_access_list = serializers.JSONField()
+    notification_access_list = serializers.JSONField()
     searchable = serializers.BooleanField()
     sensitive = serializers.BooleanField()
     retention_date = serializers.IntegerField()
@@ -213,11 +220,12 @@ class pointFileSerializer(serializers.Serializer):
 class pointUrlSerializer(serializers.Serializer):
 
     url = serializers.URLField()
-    table_name = serializers.CharField(max_length=300)
+    title = serializers.CharField(max_length=300)
     tags = serializers.JSONField()
     description = serializers.CharField(max_length=1000)
     read_access_list = serializers.JSONField()
     write_access_list = serializers.JSONField()
+    notification_access_list = serializers.JSONField()
     searchable = serializers.BooleanField()
     sensitive = serializers.BooleanField()
     retention_date = serializers.IntegerField()
@@ -228,11 +236,12 @@ class pointUrlSerializer(serializers.Serializer):
 class esriServiceSerializer(serializers.Serializer):
 
     url = serializers.URLField()
-    table_name = serializers.CharField(max_length=300)
+    title = serializers.CharField(max_length=300)
     tags = serializers.JSONField()
     description = serializers.CharField(max_length=1000)
     read_access_list = serializers.JSONField()
     write_access_list = serializers.JSONField()
+    notification_access_list = serializers.JSONField()
     searchable = serializers.BooleanField()
     sensitive = serializers.BooleanField()
     retention_date = serializers.IntegerField()
@@ -246,3 +255,6 @@ class apiSearchSerializer(serializers.Serializer):
     ])
     offset = serializers.IntegerField(required=False)
 
+class addressSerializer(serializers.Serializer):
+
+    addresses = serializers.JSONField()
