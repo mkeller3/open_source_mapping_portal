@@ -208,9 +208,6 @@ class groupData(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
     updated_username = models.CharField(max_length=300, db_index=True)
     users = models.JSONField()
-    read_access_list = models.JSONField()
-    write_access_list = models.JSONField()
-    notification_access_list = models.JSONField()
 
 class pageTrackingData(models.Model):
     username = models.CharField(max_length=300, db_index=True)

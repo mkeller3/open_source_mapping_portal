@@ -49,7 +49,7 @@ class mapQueryView(LoggingMixin, APIView):
             except tableData.DoesNotExist:
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-            conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
+            conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis,default_maps")
             cur = conn.cursor(cursor_factory=RealDictCursor)
 
             query = sql.SQL("SELECT json_build_object('type', 'FeatureCollection', 'features', json_agg(ST_AsGeoJSON({table}.*)::json)) FROM {table} ").format(table=sql.SQL(serializer.validated_data['table_name']))
@@ -93,8 +93,9 @@ class portalTablesView(LoggingMixin, APIView):
         accessible_maps = get_accessible_maps(map_security, user_groups)
 
         for map in map_services:
-            if map['secure'] == True and map['display_name'] not in accessible_maps:
-                map_services = map_services.exclude(pk=map['id'])
+            print(map)
+            if map.secure_layer == True and map.display_name not in accessible_maps:
+                map_services = map_services.exclude(pk=map.id)
 
         serializer = mapServiceDataSerializer(map_services, many=True)
         return Response(serializer.data)
@@ -146,7 +147,7 @@ class autocompleteView(LoggingMixin, APIView):
                 if serializer.validated_data['table'] not in user_groups:
                     return Response(status=status.HTTP_401_UNAUTHORIZED)
         
-        conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
+        conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis,default_maps")
         cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute(sql.SQL("SELECT DISTINCT({column}) FROM {table} WHERE LOWER(CAST({column} AS text)) LIKE LOWER('%{value}%') LIMIT 10;").format(table=sql.SQL(serializer.validated_data['table']),value=sql.SQL(serializer.validated_data['table_value']),column=sql.SQL(serializer.validated_data['table_column'])))
         distinct_values = cur.fetchall()

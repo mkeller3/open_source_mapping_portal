@@ -200,8 +200,6 @@ class analyticsTableView(LoggingMixin, APIView):
 
         return Response({'api_calls': results})
 
-# Transfer Ownership
-
 # Table Edit
 
 # Add column

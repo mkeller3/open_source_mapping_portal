@@ -26,7 +26,7 @@ class featureColumnsView(LoggingMixin, APIView):
                 tableData.objects.filter(reduce(lambda x, y: x | y, [Q(read_access_list__icontains=group,table_id=serializer.validated_data['table_name']) for group in user_groups]))
             except tableData.DoesNotExist:
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
-            conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
+            conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis,default_maps")
             cur = conn.cursor(cursor_factory=RealDictCursor)
             cur.execute(sql.SQL("SELECT column_name,data_type FROM information_schema.columns WHERE table_name = '{table}' AND data_type != 'USER-DEFINED' And column_name != 'gid';").format(table=sql.SQL(serializer.validated_data['table_name'])))
             columns = cur.fetchall()
@@ -51,7 +51,7 @@ class featureQueryView(LoggingMixin, APIView):
             except tableData.DoesNotExist:
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-            conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
+            conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis,default_maps")
             cur = conn.cursor(cursor_factory=RealDictCursor)
 
             cur.execute(sql.SQL("SELECT json_build_object('type', 'FeatureCollection', 'features', json_agg(ST_AsGeoJSON({table}.*)::json)) FROM {table};").format(table=sql.SQL(serializer.validated_data['table_name'])))

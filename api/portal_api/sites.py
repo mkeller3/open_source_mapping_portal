@@ -79,13 +79,17 @@ class siteView(LoggingMixin, APIView):
         serializer.is_valid(raise_exception=True)
         user_groups = get_user_groups(request.user.username) 
         try:
-             details = siteData.objects.get(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,site_id=serializer.validated_data['site_id']) for group in user_groups]))
+            details = siteData.objects.get(site_id=serializer.validated_data['site_id'])
         except siteData.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        try:
+             details = siteData.objects.get(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,site_id=serializer.validated_data['site_id']) for group in user_groups]))
+        except siteData.DoesNotExist:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         details.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-# Class that returns the image tied to an table
+# Class that returns the image tied to an site
 class siteImageView(LoggingMixin, APIView):
 
     @swagger_auto_schema(query_serializer=genericSiteSerializer ,operation_description="Get an site image within Mapping Portal")
@@ -191,6 +195,10 @@ class analyticsSiteView(LoggingMixin, APIView):
         serializer = genericSiteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_groups = get_user_groups(request.user.username) 
+        try:
+            siteData.objects.get(site_id=serializer.validated_data['site_id'])
+        except siteData.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         try:
             siteData.objects.filter(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,site_id=serializer.validated_data['site_id']) for group in user_groups]))
         except siteData.DoesNotExist:

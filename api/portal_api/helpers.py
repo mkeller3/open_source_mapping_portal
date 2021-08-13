@@ -25,7 +25,7 @@ user_data_db_pool = psycopg2.pool.SimpleConnectionPool(
     host=api_db_host,
     password=api_db_pwd,
     port='5432',
-    options="-c search_path=user_data,postgis"
+    options="-c search_path=user_data,postgis,default_maps"
 )
  
 def table_id_generator():
@@ -49,7 +49,7 @@ def delete_data_backend(table_id, table_name):
         file_name = os.path.splitext(file)[0]
         if file_name == table_name:
             os.remove(media_location+file)
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis,default_maps")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(sql.SQL("DROP TABLE IF EXISTS {table}").format(table=sql.SQL(table_id)))
     conn.commit()
@@ -57,7 +57,7 @@ def delete_data_backend(table_id, table_name):
     conn.close()
 
 def add_table_into_mapping_portal(table_information):
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis,default_maps")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(sql.SQL("SELECT pg_relation_size('{table}') as size;").format(table=sql.SQL(table_information['table_id'])))
     results = cur.fetchone()
@@ -115,7 +115,7 @@ def load_point_data_to_server(table_information):
 
     create_table_sql += ");"
 
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis,default_maps")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(create_table_sql)
     conn.commit()
@@ -130,7 +130,7 @@ def load_point_data_to_server(table_information):
     add_lat_lng_columns(table_id, table_information['latitude_field'], table_information['longitude_field'])
 
 def add_lat_lng_columns(table_id, latitude, longitude):
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis,default_maps")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(sql.SQL("SELECT AddGeometryColumn('{table_id}','geom', '4326', 'POINT',2);").format(table_id=sql.SQL(table_id)))
     cur.execute(sql.SQL("UPDATE {table_id} SET geom = ST_SetSRID(ST_MakePoint({longitude}, {latitude}),4326);").format(table_id=sql.SQL(table_id), latitude=sql.SQL(latitude), longitude=sql.SQL(longitude)))
@@ -140,7 +140,7 @@ def add_lat_lng_columns(table_id, latitude, longitude):
     conn.close()
 
 def validate_geometry(table_id):
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis,default_maps")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(sql.SQL("DELETE FROM {table_id} WHERE geom is NULL;").format(table_id=sql.SQL(table_id)))
     cur.execute(sql.SQL("UPDATE {table_id} SET geom=ST_MakeValid(geom);").format(table_id=sql.SQL(table_id)))
@@ -149,7 +149,7 @@ def validate_geometry(table_id):
     conn.close()
     
 def index_table(table_id):
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis,default_maps")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(sql.SQL("CREATE INDEX {table_id_index} ON {table_id} USING GIST(geom);").format(table_id_index=sql.SQL(f"{table_id}_spatial_index"), table_id=sql.SQL(table_id)))
     cur.execute(sql.SQL("CLUSTER {table_id} USING {table_id_index};").format(table_id_index=sql.SQL(f"{table_id}_spatial_index"), table_id=sql.SQL(table_id)))
@@ -159,7 +159,7 @@ def index_table(table_id):
     conn.close()
 
 def clean_columns(table_id):
-    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis")
+    conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis,default_maps")
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(sql.SQL("SELECT column_name,data_type FROM information_schema.columns WHERE table_name = '{table_id}' AND data_type != 'USER-DEFINED' And column_name != 'gid';").format(table_id=sql.SQL(table_id)))
     columns = cur.fetchall()
