@@ -110,7 +110,7 @@ class portalTableView(LoggingMixin, APIView):
         user_groups = get_user_groups(request.user.username) 
         try:
             mapServiceData.objects.get(table_name=serializer.validated_data['table_name'])
-        except mapServiceData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if serializer.validated_data['table_name'] not in user_groups:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -177,8 +177,6 @@ class wmsSearchView(LoggingMixin, APIView):
 # Survey View
 
 # Master portal search
-
-# View map services
 
 # Break Values
 

@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -27,11 +28,11 @@ class appView(LoggingMixin, APIView):
         user_groups = get_user_groups(request.user.username) 
         try:
             details = appData.objects.get(app_id=serializer.validated_data['app_id'])
-        except appData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         try:
             details = appData.objects.filter(reduce(lambda x, y: x | y, [Q(read_access_list__icontains=group,app_id=serializer.validated_data['app_id']) for group in user_groups]))
-        except appData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         details = appData.objects.get(app_id=serializer.validated_data['app_id'])
         details.views+=1
@@ -56,7 +57,7 @@ class appView(LoggingMixin, APIView):
         user_groups = get_user_groups(request.user.username) 
         try:
             details = appData.objects.get(app_id=request.data['app_id'])
-        except appData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         try:
             details = appData.objects.get(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,app_id=request.data['app_id']) for group in user_groups]))
@@ -80,7 +81,7 @@ class appView(LoggingMixin, APIView):
         user_groups = get_user_groups(request.user.username) 
         try:
              details = appData.objects.get(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,app_id=serializer.validated_data['app_id']) for group in user_groups]))
-        except appData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         details.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -94,7 +95,7 @@ class appImageView(LoggingMixin, APIView):
         serializer.is_valid(raise_exception=True)
         try:
             details = appData.objects.get(app_id=serializer.validated_data['app_id'])
-        except appData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = appDataImageSerializer(details)
         return Response(details)
@@ -159,11 +160,11 @@ class duplicateAppView(LoggingMixin, APIView):
         user_groups = get_user_groups(request.user.username) 
         try:
             appData.objects.get(app_id=serializer.validated_data['app_id'])
-        except appData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         try:
             appData.objects.filter(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,app_id=serializer.validated_data['app_id']) for group in user_groups]))
-        except appData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         details = appData.objects.get(app_id=serializer.validated_data['app_id'])
@@ -192,8 +193,12 @@ class analyticsAppView(LoggingMixin, APIView):
         serializer.is_valid(raise_exception=True)
         user_groups = get_user_groups(request.user.username) 
         try:
+            appData.objects.get(app_id=serializer.validated_data['app_id'])
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        try:
             appData.objects.filter(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,app_id=serializer.validated_data['app_id']) for group in user_groups]))
-        except appData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         conn = psycopg2.connect(database=api_db, user=api_db_user, password=api_db_pwd, host=api_db_host)

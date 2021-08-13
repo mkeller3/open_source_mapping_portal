@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -189,12 +190,15 @@ class analyticsMapView(LoggingMixin, APIView):
     def get(self, request):
         serializer = genericMapSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user_groups = get_user_groups(request.user.username) 
+        user_groups = get_user_groups(request.user.username)
+        try:
+            mapData.objects.get(map_id=serializer.validated_data['map_id'])
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND) 
         try:
             mapData.objects.filter(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,map_id=serializer.validated_data['map_id']) for group in user_groups]))
-        except mapData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-
         conn = psycopg2.connect(database=api_db, user=api_db_user, password=api_db_pwd, host=api_db_host)
         cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute(sql.SQL("SELECT b.username, a.requested_at, a.response_ms, a.method, a.host FROM rest_framework_tracking_apirequestlog a JOIN auth_user b ON b.id = a.user_id WHERE path = '/api/v1/maps/map/' AND query_params = '{''map_id'': '%s'}'"),(serializer.validated_data['map_id'],))

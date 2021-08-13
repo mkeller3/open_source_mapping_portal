@@ -181,6 +181,10 @@ class analyticsTableView(LoggingMixin, APIView):
         serializer.is_valid(raise_exception=True)
         user_groups = get_user_groups(request.user.username) 
         try:
+            tableData.objects.get(table_id=serializer.validated_data['table_id'])
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        try:
             tableData.objects.filter(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,table_id=serializer.validated_data['table_id']) for group in user_groups]))
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_401_UNAUTHORIZED)

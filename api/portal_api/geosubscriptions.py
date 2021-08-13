@@ -9,6 +9,7 @@ from django.db.models import Q
 from functools import reduce
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework_tracking.mixins import LoggingMixin
+from django.core.exceptions import ObjectDoesNotExist
 
 columns = ['username','geosubscription_id','created_time', 'geosubscription_information',
     'updated_time','updated_username','read_access_list','write_access_list',
@@ -26,11 +27,11 @@ class geosubscriptionView(LoggingMixin, APIView):
         user_groups = get_user_groups(request.user.username) 
         try:
             details = geosubscriptionData.objects.get(geosubscription_id=serializer.validated_data['geosubscription_id'])
-        except geosubscriptionData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         try:
             details = geosubscriptionData.objects.filter(reduce(lambda x, y: x | y, [Q(read_access_list__icontains=group,geosubscription_id=serializer.validated_data['geosubscription_id']) for group in user_groups]))
-        except geosubscriptionData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         details = geosubscriptionData.objects.get(geosubscription_id=serializer.validated_data['geosubscription_id'])
         details.views+=1
@@ -55,7 +56,7 @@ class geosubscriptionView(LoggingMixin, APIView):
         user_groups = get_user_groups(request.user.username) 
         try:
             details = geosubscriptionData.objects.get(geosubscription_id=request.data['geosubscription_id'])
-        except geosubscriptionData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         try:
             details = geosubscriptionData.objects.get(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,geosubscription_id=request.data['geosubscription_id']) for group in user_groups]))
@@ -79,7 +80,7 @@ class geosubscriptionView(LoggingMixin, APIView):
         user_groups = get_user_groups(request.user.username) 
         try:
              details = geosubscriptionData.objects.get(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,geosubscription_id=serializer.validated_data['geosubscription_id']) for group in user_groups]))
-        except geosubscriptionData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         details.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -93,7 +94,7 @@ class geosubscriptionImageView(LoggingMixin, APIView):
         serializer.is_valid(raise_exception=True)
         try:
             details = geosubscriptionData.objects.get(geosubscription_id=serializer.validated_data['geosubscription_id'])
-        except geosubscriptionData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = geosubscriptionDataImageSerializer(details)
         return Response(details)
@@ -158,11 +159,11 @@ class duplicateGeosubscriptionView(LoggingMixin, APIView):
         user_groups = get_user_groups(request.user.username) 
         try:
             geosubscriptionData.objects.get(geosubscription_id=serializer.validated_data['geosubscription_id'])
-        except geosubscriptionData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         try:
             geosubscriptionData.objects.filter(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,geosubscription_id=serializer.validated_data['geosubscription_id']) for group in user_groups]))
-        except geosubscriptionData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         details = geosubscriptionData.objects.get(geosubscription_id=serializer.validated_data['geosubscription_id'])
@@ -191,8 +192,12 @@ class analyticsGeosubscriptionView(LoggingMixin, APIView):
         serializer.is_valid(raise_exception=True)
         user_groups = get_user_groups(request.user.username) 
         try:
+            geosubscriptionData.objects.get(geosubscription_id=serializer.validated_data['geosubscription_id'])
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        try:
             geosubscriptionData.objects.filter(reduce(lambda x, y: x | y, [Q(write_access_list__icontains=group,geosubscription_id=serializer.validated_data['geosubscription_id']) for group in user_groups]))
-        except geosubscriptionData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         conn = psycopg2.connect(database=api_db, user=api_db_user, password=api_db_pwd, host=api_db_host)

@@ -7,6 +7,7 @@ from django.db.models import Q
 from functools import reduce
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework_tracking.mixins import LoggingMixin
+from django.core.exceptions import ObjectDoesNotExist
 
 # User Search
 class userSearchView(LoggingMixin, APIView):
@@ -16,7 +17,7 @@ class userSearchView(LoggingMixin, APIView):
     def get(self, request):
         try:
             details = User.objects.filter(username__startswith=request.GET.get('search')).values('username', 'email')
-        except User.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = userSearchSerializer(details, many=True)
         return Response(serializer.data)
@@ -29,12 +30,10 @@ class groupSearchView(LoggingMixin, APIView):
     def get(self, request):
         try:
             details = groupData.objects.filter(group_name__startswith=request.GET.get('search')).values('group_name', 'group_id')
-        except groupData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = groupSearchSerializer(details, many=True)
         return Response(serializer.data)
-
-# User Image
 
 # TODO
 # User Preference
@@ -47,7 +46,7 @@ class groupView(LoggingMixin, APIView):
     def get(self, request):
         try:
             details = groupData.objects.filter(users__contains=request.user.username)
-        except groupData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         details = groupData.objects.get(group_id=request.GET.get('group_id'))
         serializer = groupDataSerializer(details)
@@ -69,7 +68,7 @@ class groupView(LoggingMixin, APIView):
     def put(self, request):        
         try:
             details = groupData.objects.get(owners__contains=request.user.username)
-        except details.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         serializer = groupDataSerializer(details, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -85,7 +84,7 @@ class groupView(LoggingMixin, APIView):
     def delete(self, request):
         try:
             details = groupData.objects.get(owners__contains=request.user.username)
-        except groupData.DoesNotExist:
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         details.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
