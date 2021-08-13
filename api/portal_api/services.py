@@ -11,6 +11,7 @@ from functools import reduce
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework_tracking.mixins import LoggingMixin
 from django.core.exceptions import ObjectDoesNotExist
+import xmltodict
 
 
 class geocodeView(LoggingMixin, APIView):
@@ -154,6 +155,22 @@ class autocompleteView(LoggingMixin, APIView):
         return Response({"values": distinct_values})
 
 # WMS Search
+class wmsSearchView(LoggingMixin, APIView):
+    permission_classes = (IsAuthenticated),
+
+    @swagger_auto_schema(query_serializer=wmsSearchSerializer, operation_description="Get an array of possible values for a table within Mapping Portal.")
+    def get(self, request):
+        serializer = wmsSearchSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+
+        response = requests.get(serializer.validated_data['url'])
+
+        try:
+            data_dictionary = xmltodict.parse(response.content)
+        except:
+            data_dictionary = response.content
+
+        return Response(data_dictionary)
 
 # Page View
 
