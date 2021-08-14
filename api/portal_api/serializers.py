@@ -215,6 +215,11 @@ class tableQuerySerializer(serializers.Serializer):
         ("ST_Disjoint", "ST_Disjoint"), 
         ("ST_Touches", "ST_Touches"),
     )
+
+    order_by_choices = (
+        ("asc", "asc"), 
+        ("desc", "desc")
+    )
     table_name = serializers.CharField()
     table_type = serializers.CharField()
     where = serializers.JSONField(required=False)
@@ -228,6 +233,8 @@ class tableQuerySerializer(serializers.Serializer):
     coordinates = serializers.CharField(required=False)
     geometry_type = serializers.ChoiceField(required=False, choices=geometry_type_choices)
     spatial_relationship = serializers.ChoiceField(required=False, choices=spatial_relationship_choices)
+    order_by_sort = serializers.ChoiceField(required=False, choices=order_by_choices)
+    order_by_column = serializers.CharField()
 
 class pointFileSerializer(serializers.Serializer):
 

@@ -95,13 +95,46 @@ class featureQueryView(LoggingMixin, APIView):
 
         count_query = sql.SQL("SELECT COUNT(*) FROM {table}").format(table=sql.Identifier(serializer.validated_data['table_name']))
 
+        if 'where' in serializer.validated_data:
+            allowed_operators = ['=','!=','>=','>','<=','<','ilike','like','starts_with','ends_with','contains']
+            allowed_combine_operators = ['AND','OR','NOT']
+            for index, query_string in enumerate(serializer.validated_data['where'], start=0):
+                if query_string['operator'] == 'starts_with':
+                    query_string['operator'] = 'ilike'
+                    query_string['value'] = f"{query_string['value']}%"
+                if query_string['operator'] == 'ends_with':
+                    query_string['operator'] = 'ilike'
+                    query_string['value'] = f"%{query_string['value']}"
+                if query_string['operator'] == 'contains':
+                    query_string['operator'] = 'ilike'
+                    query_string['value'] = f"%{query_string['value']}%"
+                if query_string['operator'] not in allowed_operators:
+                    return Response({"error":f"Please provide an approved operator. ({allowed_operators})"},status=status.HTTP_400_BAD_REQUEST)
+                if index == 0:                    
+                    query += sql.SQL(" WHERE {column} {operator} {value}").format(value=sql.Literal(query_string['value']),operator=sql.SQL(query_string['operator']),column=sql.Identifier(query_string['column']))
+                    count_query += sql.SQL(" WHERE {column} {operator} {value}").format(value=sql.Literal(query_string['value']),operator=sql.SQL(query_string['operator']),column=sql.Identifier(query_string['column']))
+                else:
+                    if query_string['combine_operator'] not in allowed_combine_operators:
+                        return Response({"error":f"Please provide an approved combine operator. ({allowed_combine_operators})"},status=status.HTTP_400_BAD_REQUEST)
+                    query += sql.SQL(" {combine_operator} {column} {operator} {value}").format(value=sql.Literal(query_string['value']),combine_operator=sql.SQL(query_string['combine_operator']),operator=sql.SQL(query_string['operator']),column=sql.Identifier(query_string['column']))
+                    count_query += sql.SQL(" {combine_operator} {column} {operator} {value}").format(value=sql.Literal(query_string['value']),combine_operator=sql.SQL(query_string['combine_operator']),operator=sql.SQL(query_string['operator']),column=sql.Identifier(query_string['column']))
+
         if 'coordinates' in serializer.validated_data and 'geometry_type' in serializer.validated_data and 'spatial_relationship' in serializer.validated_data:
-            if serializer.validated_data['geometry_type'] == 'POLYGON':
-                query += sql.SQL("WHERE {spatial_rel}(ST_GeomFromText('{geom_type}(({coords}))',4326) ,{table}.geom)").format(coords=sql.SQL(serializer.validated_data['coordinates']),geom_type=sql.SQL(serializer.validated_data['geometry_type']),spatial_rel=sql.SQL(serializer.validated_data['spatial_relationship']),table=sql.Identifier(serializer.validated_data['table_name']))
-                count_query += sql.SQL("WHERE {spatial_rel}(ST_GeomFromText('{geom_type}(({coords}))',4326) ,{table}.geom)").format(coords=sql.SQL(serializer.validated_data['coordinates']),geom_type=sql.SQL(serializer.validated_data['geometry_type']),spatial_rel=sql.SQL(serializer.validated_data['spatial_relationship']),table=sql.Identifier(serializer.validated_data['table_name']))
+            if 'where' not in serializer.validated_data:
+                query += sql.SQL(" WHERE ")
+                count_query += sql.SQL(" WHERE ")
             else:
-                query += sql.SQL("WHERE {spatial_rel}(ST_GeomFromText('{geom_type}({coords})',4326) ,{table}.geom)").format(coords=sql.SQL(serializer.validated_data['coordinates']),geom_type=sql.SQL(serializer.validated_data['geometry_type']),spatial_rel=sql.SQL(serializer.validated_data['spatial_relationship']),table=sql.Identifier(serializer.validated_data['table_name']))
-                count_query += sql.SQL("WHERE {spatial_rel}(ST_GeomFromText('{geom_type}({coords})',4326) ,{table}.geom)").format(coords=sql.SQL(serializer.validated_data['coordinates']),geom_type=sql.SQL(serializer.validated_data['geometry_type']),spatial_rel=sql.SQL(serializer.validated_data['spatial_relationship']),table=sql.Identifier(serializer.validated_data['table_name']))
+                query += sql.SQL(" AND ")
+                count_query += sql.SQL(" AND ")
+            if serializer.validated_data['geometry_type'] == 'POLYGON':
+                query += sql.SQL("{spatial_rel}(ST_GeomFromText('{geom_type}(({coords}))',4326) ,{table}.geom)").format(coords=sql.SQL(serializer.validated_data['coordinates']),geom_type=sql.SQL(serializer.validated_data['geometry_type']),spatial_rel=sql.SQL(serializer.validated_data['spatial_relationship']),table=sql.Identifier(serializer.validated_data['table_name']))
+                count_query += sql.SQL("{spatial_rel}(ST_GeomFromText('{geom_type}(({coords}))',4326) ,{table}.geom)").format(coords=sql.SQL(serializer.validated_data['coordinates']),geom_type=sql.SQL(serializer.validated_data['geometry_type']),spatial_rel=sql.SQL(serializer.validated_data['spatial_relationship']),table=sql.Identifier(serializer.validated_data['table_name']))
+            else:
+                query += sql.SQL("{spatial_rel}(ST_GeomFromText('{geom_type}({coords})',4326) ,{table}.geom)").format(coords=sql.SQL(serializer.validated_data['coordinates']),geom_type=sql.SQL(serializer.validated_data['geometry_type']),spatial_rel=sql.SQL(serializer.validated_data['spatial_relationship']),table=sql.Identifier(serializer.validated_data['table_name']))
+                count_query += sql.SQL("{spatial_rel}(ST_GeomFromText('{geom_type}({coords})',4326) ,{table}.geom)").format(coords=sql.SQL(serializer.validated_data['coordinates']),geom_type=sql.SQL(serializer.validated_data['geometry_type']),spatial_rel=sql.SQL(serializer.validated_data['spatial_relationship']),table=sql.Identifier(serializer.validated_data['table_name']))
+
+        if 'order_by_column' in serializer.validated_data and 'order_by_sort' in serializer.validated_data:
+            query += sql.SQL(" ORDER BY {order_by_column} {order_by_sort}").format(order_by_sort=sql.SQL(serializer.validated_data['order_by_sort']),order_by_column=sql.SQL(serializer.validated_data['order_by_column']))
 
         if 'limit' in serializer.validated_data:
             query += sql.SQL(" LIMIT {limit}").format(limit=sql.SQL(str(serializer.validated_data['limit'])))
