@@ -58,12 +58,17 @@ export default {
         icon: "mdi-map-outline",
         url: "/map_builder/",
       },
+      {
+        title: "Portal Search",
+        icon: "mdi-magnify",
+        url: "/portal_search/",
+      },
+      {
+        title: "Portal Creator",
+        icon: "mdi-wrench",
+        url: "/creator/",
+      },
     ],
-  }),
-  methods:{
-    goToUrl(link){
-      window.open(link)
-    }
-  }
+  })
 };
 </script>

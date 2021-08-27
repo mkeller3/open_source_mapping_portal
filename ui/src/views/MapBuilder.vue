@@ -227,6 +227,12 @@ export default {
     mini: true,
     drawer: true,
   }),
+  mounted(){
+    document.title = 'Mapping Portal | Map Builder'
+    if(this.$route.query.map_id){
+        console.log('old map')
+    }
+  },
   methods: {
     iconClick(icon, side) {
       if (side === "left") {
