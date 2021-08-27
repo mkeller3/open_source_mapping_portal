@@ -30,6 +30,7 @@ urlpatterns = [
     path('tables/analytics/', views.analyticsTableView.as_view(), name='table_analytics'),
     path('features/columns/', views.featureColumnsView.as_view(), name='columns'),
     path('features/query/', views.featureQueryView.as_view(), name='query'),
+    path('features/statistics/', views.featureStatisticsView.as_view(), name='statistics'),
     path('sites/site/', views.mapView.as_view(), name='map'),
     path('sites/site_image/', views.siteImageView.as_view(), name='site_image'),
     path('sites/duplicate_site/', views.duplicateSiteView.as_view(), name='duplicate_site'),

@@ -6,6 +6,27 @@ from django.conf import settings
 
 User = get_user_model()
 
+geometry_type_choices = ( 
+    ("POINT", "POINT"), 
+    ("LINESTRING", "LINESTRING"), 
+    ("POLYGON", "POLYGON")
+)
+
+spatial_relationship_choices = (
+    ("ST_Intersects", "ST_Intersects"), 
+    ("ST_Crosses", "ST_Crosses"), 
+    ("ST_Within", "ST_Within"), 
+    ("ST_Contains", "ST_Contains"), 
+    ("ST_Overlaps", "ST_Overlaps"), 
+    ("ST_Disjoint", "ST_Disjoint"), 
+    ("ST_Touches", "ST_Touches"),
+)
+
+order_by_choices = (
+    ("asc", "asc"), 
+    ("desc", "desc")
+)
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -200,26 +221,7 @@ class tableColumnsSerializer(serializers.Serializer):
     table_type = serializers.CharField()
 
 class tableQuerySerializer(serializers.Serializer):
-    geometry_type_choices = ( 
-        ("POINT", "POINT"), 
-        ("LINESTRING", "LINESTRING"), 
-        ("POLYGON", "POLYGON")
-    )
-
-    spatial_relationship_choices = (
-        ("ST_Intersects", "ST_Intersects"), 
-        ("ST_Crosses", "ST_Crosses"), 
-        ("ST_Within", "ST_Within"), 
-        ("ST_Contains", "ST_Contains"), 
-        ("ST_Overlaps", "ST_Overlaps"), 
-        ("ST_Disjoint", "ST_Disjoint"), 
-        ("ST_Touches", "ST_Touches"),
-    )
-
-    order_by_choices = (
-        ("asc", "asc"), 
-        ("desc", "desc")
-    )
+    
     table_name = serializers.CharField()
     table_type = serializers.CharField()
     where = serializers.JSONField(required=False)
@@ -313,3 +315,21 @@ class autocompleteSerializer(serializers.Serializer):
 class wmsSearchSerializer(serializers.Serializer):
 
     url = serializers.URLField()
+
+class aggregateSerializer(serializers.Serializer):
+
+    type = serializers.CharField()
+    column = serializers.CharField()
+    group_method = serializers.CharField()
+    group_column = serializers.CharField()
+
+class featureStatisticsSerializer(serializers.Serializer):
+
+    aggregate_columns = serializers.JSONField()
+    where = serializers.JSONField(required=False)
+    coordinates = serializers.CharField(required=False)
+    table_name = serializers.CharField()
+    table_type = serializers.CharField()
+    geometry_type = serializers.ChoiceField(required=False, choices=geometry_type_choices)
+    spatial_relationship = serializers.ChoiceField(required=False, choices=spatial_relationship_choices)
+    

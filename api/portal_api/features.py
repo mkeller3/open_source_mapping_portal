@@ -1,3 +1,4 @@
+from rest_framework.compat import distinct
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -162,6 +163,137 @@ class featureQueryView(LoggingMixin, APIView):
         return Response(data)
 
 # Map Stats
+class featureStatisticsView(LoggingMixin, APIView):
+    permission_classes = (IsAuthenticated),
+
+    
+    
+    @swagger_auto_schema(query_serializer=featureStatisticsSerializer, operation_description="Get an tables columns with in Mapping Portal")
+    def get(self, request):
+        serializer = featureStatisticsSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+        user_groups = get_user_groups(request.user.username) 
+
+        if serializer.validated_data['table_type'] == 'user_data':
+            try:
+                tableData.objects.get(table_id=serializer.validated_data['table_name'])
+            except ObjectDoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            try:
+                tableData.objects.filter(reduce(lambda x, y: x | y, [Q(read_access_list__icontains=group,table_id=serializer.validated_data['table_name']) for group in user_groups]))
+            except ObjectDoesNotExist:
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
+        elif serializer.validated_data['table_type'] == 'map_layer':
+            try:
+                secure_layer = mapServiceData.objects.get(table_name=serializer.validated_data['table_name']).secure_layer
+            except mapServiceData.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            if secure_layer:
+                if serializer.validated_data['table_name'] not in user_groups:
+                    return Response(status=status.HTTP_401_UNAUTHORIZED)
+        
+        conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=user_data,postgis,default_maps")
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+
+        cols = []
+        distinct = False
+        general_stats = False
+        results= {}
+
+        for aggregrate in serializer.validated_data['aggregate_columns']:
+            if aggregrate['type'] == 'distinct':
+                distinct = True
+            else:
+                general_stats = True
+                cols.append(f"{aggregrate['type']}({aggregrate['column']}) as {aggregrate['type']}_{aggregrate['column']}")
+
+        if general_stats:
+            query = sql.SQL("SELECT {cols} FROM {table}").format(cols=sql.SQL(",".join(cols)), table=sql.Identifier(serializer.validated_data['table_name']))
+                
+            if 'where' in serializer.validated_data:
+                allowed_operators = ['=','!=','>=','>','<=','<','ilike','like','starts_with','ends_with','contains']
+                allowed_combine_operators = ['AND','OR','NOT']
+                for index, query_string in enumerate(serializer.validated_data['where'], start=0):
+                    if query_string['operator'] == 'starts_with':
+                        query_string['operator'] = 'ilike'
+                        query_string['value'] = f"{query_string['value']}%"
+                    if query_string['operator'] == 'ends_with':
+                        query_string['operator'] = 'ilike'
+                        query_string['value'] = f"%{query_string['value']}"
+                    if query_string['operator'] == 'contains':
+                        query_string['operator'] = 'ilike'
+                        query_string['value'] = f"%{query_string['value']}%"
+                    if query_string['operator'] not in allowed_operators:
+                        return Response({"error":f"Please provide an approved operator. ({allowed_operators})"},status=status.HTTP_400_BAD_REQUEST)
+                    if index == 0:                    
+                        query += sql.SQL(" WHERE {column} {operator} {value}").format(value=sql.Literal(query_string['value']),operator=sql.SQL(query_string['operator']),column=sql.Identifier(query_string['column']))
+                    else:
+                        if query_string['combine_operator'] not in allowed_combine_operators:
+                            return Response({"error":f"Please provide an approved combine operator. ({allowed_combine_operators})"},status=status.HTTP_400_BAD_REQUEST)
+                        query += sql.SQL(" {combine_operator} {column} {operator} {value}").format(value=sql.Literal(query_string['value']),combine_operator=sql.SQL(query_string['combine_operator']),operator=sql.SQL(query_string['operator']),column=sql.Identifier(query_string['column']))
+                        
+            if 'coordinates' in serializer.validated_data and 'geometry_type' in serializer.validated_data and 'spatial_relationship' in serializer.validated_data:
+                if 'where' not in serializer.validated_data:
+                    query += sql.SQL(" WHERE ")
+                else:
+                    query += sql.SQL(" AND ")
+                if serializer.validated_data['geometry_type'] == 'POLYGON':
+                    query += sql.SQL("{spatial_rel}(ST_GeomFromText('{geom_type}(({coords}))',4326) ,{table}.geom)").format(coords=sql.SQL(serializer.validated_data['coordinates']),geom_type=sql.SQL(serializer.validated_data['geometry_type']),spatial_rel=sql.SQL(serializer.validated_data['spatial_relationship']),table=sql.Identifier(serializer.validated_data['table_name']))
+                else:
+                    query += sql.SQL("{spatial_rel}(ST_GeomFromText('{geom_type}({coords})',4326) ,{table}.geom)").format(coords=sql.SQL(serializer.validated_data['coordinates']),geom_type=sql.SQL(serializer.validated_data['geometry_type']),spatial_rel=sql.SQL(serializer.validated_data['spatial_relationship']),table=sql.Identifier(serializer.validated_data['table_name']))
+
+            cur.execute(query)
+            data = cur.fetchone()
+            for attr in data:
+                results[attr] = data[attr]
+        if distinct:
+            for aggregrate in serializer.validated_data['aggregate_columns']:
+                if aggregrate['type'] == 'distinct':
+                    query = sql.SQL("SELECT DISTINCT({column}), {group_method}({group_column}) FROM {table}").format(column=sql.SQL(aggregrate['column']),group_method=sql.SQL(aggregrate['group_method']),group_column=sql.SQL(aggregrate['group_column']), table=sql.Identifier(serializer.validated_data['table_name']))
+                
+                    if 'where' in serializer.validated_data:
+                        allowed_operators = ['=','!=','>=','>','<=','<','ilike','like','starts_with','ends_with','contains']
+                        allowed_combine_operators = ['AND','OR','NOT']
+                        for index, query_string in enumerate(serializer.validated_data['where'], start=0):
+                            if query_string['operator'] == 'starts_with':
+                                query_string['operator'] = 'ilike'
+                                query_string['value'] = f"{query_string['value']}%"
+                            if query_string['operator'] == 'ends_with':
+                                query_string['operator'] = 'ilike'
+                                query_string['value'] = f"%{query_string['value']}"
+                            if query_string['operator'] == 'contains':
+                                query_string['operator'] = 'ilike'
+                                query_string['value'] = f"%{query_string['value']}%"
+                            if query_string['operator'] not in allowed_operators:
+                                return Response({"error":f"Please provide an approved operator. ({allowed_operators})"},status=status.HTTP_400_BAD_REQUEST)
+                            if index == 0:                    
+                                query += sql.SQL(" WHERE {column} {operator} {value}").format(value=sql.Literal(query_string['value']),operator=sql.SQL(query_string['operator']),column=sql.Identifier(query_string['column']))
+                            else:
+                                if query_string['combine_operator'] not in allowed_combine_operators:
+                                    return Response({"error":f"Please provide an approved combine operator. ({allowed_combine_operators})"},status=status.HTTP_400_BAD_REQUEST)
+                                query += sql.SQL(" {combine_operator} {column} {operator} {value}").format(value=sql.Literal(query_string['value']),combine_operator=sql.SQL(query_string['combine_operator']),operator=sql.SQL(query_string['operator']),column=sql.Identifier(query_string['column']))
+                                
+                    if 'coordinates' in serializer.validated_data and 'geometry_type' in serializer.validated_data and 'spatial_relationship' in serializer.validated_data:
+                        if 'where' not in serializer.validated_data:
+                            query += sql.SQL(" WHERE ")
+                        else:
+                            query += sql.SQL(" AND ")
+                        if serializer.validated_data['geometry_type'] == 'POLYGON':
+                            query += sql.SQL("{spatial_rel}(ST_GeomFromText('{geom_type}(({coords}))',4326) ,{table}.geom)").format(coords=sql.SQL(serializer.validated_data['coordinates']),geom_type=sql.SQL(serializer.validated_data['geometry_type']),spatial_rel=sql.SQL(serializer.validated_data['spatial_relationship']),table=sql.Identifier(serializer.validated_data['table_name']))
+                        else:
+                            query += sql.SQL("{spatial_rel}(ST_GeomFromText('{geom_type}({coords})',4326) ,{table}.geom)").format(coords=sql.SQL(serializer.validated_data['coordinates']),geom_type=sql.SQL(serializer.validated_data['geometry_type']),spatial_rel=sql.SQL(serializer.validated_data['spatial_relationship']),table=sql.Identifier(serializer.validated_data['table_name']))
+                    query += sql.SQL(" GROUP BY {column} ORDER BY {group_method} DESC").format(column=sql.SQL(aggregrate['column']),group_method=sql.SQL(aggregrate['group_method']))
+
+                    cur.execute(query)
+                    data = cur.fetchall()
+
+                    results[f"distinct_{aggregrate['column']}_{aggregrate['group_method']}_{aggregrate['group_column']}"] = data
+
+
+        cur.close()
+        conn.close()
+
+        return Response(results)
 
 # bbox
 

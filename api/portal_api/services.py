@@ -117,7 +117,6 @@ class portalTableView(LoggingMixin, APIView):
         details = mapServiceData.objects.get(table_name=serializer.validated_data['table_name'])
         return Response(details)
 
-
 # Autocomplete
 class autocompleteView(LoggingMixin, APIView):
     permission_classes = (IsAuthenticated),

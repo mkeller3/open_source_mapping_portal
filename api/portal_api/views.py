@@ -47,6 +47,7 @@ duplicateTableView = tables.duplicateTableView
 # Features API
 featureColumnsView = features.featureColumnsView
 featureQueryView = features.featureQueryView
+featureStatisticsView = features.featureStatisticsView
 
 # Sites API
 siteView = sites.siteView
