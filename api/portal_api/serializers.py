@@ -333,3 +333,13 @@ class featureStatisticsSerializer(serializers.Serializer):
     geometry_type = serializers.ChoiceField(required=False, choices=geometry_type_choices)
     spatial_relationship = serializers.ChoiceField(required=False, choices=spatial_relationship_choices)
     
+class portalSearchSerializer(serializers.Serializer):
+    
+    search_term = serializers.CharField(required=False)
+    limit = serializers.IntegerField(required=False,validators=[
+        MaxValueValidator(settings.MAX_NUMBER_OF_API_RESULTS),
+        MinValueValidator(1)
+    ])
+    offset = serializers.IntegerField(required=False)
+    order_by_sort = serializers.ChoiceField(required=False, choices=order_by_choices)
+    order_by_column = serializers.CharField(required=False)

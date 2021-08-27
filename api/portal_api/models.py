@@ -109,6 +109,8 @@ class geosubscriptionData(models.Model):
     title = models.CharField(max_length=500)
     description = models.TextField()
     searchable = models.BooleanField(default=True)
+    views = models.IntegerField(default=1)
+    tags = models.JSONField()
     geosubscription_data = models.JSONField()
 
 class mapServiceData(models.Model):
@@ -142,7 +144,7 @@ class mapSecurityData(models.Model):
 
 class mapServiceViewsData(models.Model):
     username = models.CharField(max_length=300, db_index=True)
-    display_name = models.CharField(max_length=300)
+    table_name = models.CharField(max_length=300)
     referer_url = models.URLField()
     created_time = models.DateTimeField(auto_now_add=True)
 
@@ -185,6 +187,7 @@ class blockedUserData(models.Model):
 class siteData(models.Model):
     username = models.CharField(max_length=300, db_index=True)
     url = models.CharField(max_length=150, db_index=True)
+    site_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=500)
     description = models.TextField()
     created_time = models.DateTimeField(auto_now_add=True)
@@ -198,6 +201,7 @@ class siteData(models.Model):
     retention_date = models.IntegerField()
     image = models.TextField()
     views = models.IntegerField()
+    tags = models.JSONField()
     site_information = models.JSONField()
 
 class groupData(models.Model):

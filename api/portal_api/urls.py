@@ -53,6 +53,7 @@ urlpatterns = [
     path('services/portal_tables/', views.portalTablesView.as_view(), name='portal_tables'),
     path('services/autocomplete/', views.autocompleteView.as_view(), name='autocomplete'),
     path('services/wms_search/', views.wmsSearchView.as_view(), name='wms_search'),
+    path('services/portal_search/', views.portalSearchView.as_view(), name='portal_search'),
     path('remote_datasets/remote_dataset/', views.remoteDataView.as_view(), name='remote_dataset'),
     path('authentication/get_token/', obtain_auth_token, name="get_token"),
     path('register/register_user/', views.registerView.as_view(), name="register_user"),

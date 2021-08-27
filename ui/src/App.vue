@@ -72,3 +72,14 @@ export default {
   })
 };
 </script>
+
+<style>
+
+#app,
+html,
+.v-main {
+  height: 100vh !important;
+}
+
+
+</style>

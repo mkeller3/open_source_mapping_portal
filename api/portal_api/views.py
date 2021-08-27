@@ -74,6 +74,7 @@ mapQueryView = services.mapQueryView
 portalTablesView = services.portalTablesView
 autocompleteView = services.autocompleteView
 wmsSearchView = services.wmsSearchView
+portalSearchView = services.portalSearchView
 
 # Remote Data API
 remoteDataView = remote_data.remoteDataView

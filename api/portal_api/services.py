@@ -176,7 +176,87 @@ class wmsSearchView(LoggingMixin, APIView):
 # Survey View
 
 # Master portal search
+class portalSearchView(LoggingMixin, APIView):
+    permission_classes = (IsAuthenticated),
 
+    @swagger_auto_schema(query_serializer=portalSearchSerializer, operation_description="Search for maps, apps, layers, sites in Portal.")
+    def get(self, request):
+        serializer = portalSearchSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+        user_groups = get_user_groups(request.user.username) 
+        
+        query = sql.SQL("SELECT * FROM portal_api_portalsearchdata")
+
+        if 'search_term' in serializer.validated_data:
+            count_query = sql.SQL("SELECT COUNT(*) FROM portal_api_portalsearchdata WHERE (title ilike '%{search_term}%' OR description ilike '%{search_term}%' OR tags::text ilike '%{search_term}%')").format(search_term=sql.SQL(serializer.validated_data['search_term']))
+        else:
+            count_query = sql.SQL("SELECT COUNT(*) FROM portal_api_portalsearchdata")    
+
+        if 'where' in serializer.validated_data:
+            allowed_operators = ['=','!=','>=','>','<=','<','ilike','like','starts_with','ends_with','contains']
+            allowed_combine_operators = ['AND','OR','NOT']
+            for index, query_string in enumerate(serializer.validated_data['where'], start=0):
+                if query_string['operator'] == 'starts_with':
+                    query_string['operator'] = 'ilike'
+                    query_string['value'] = f"{query_string['value']}%"
+                if query_string['operator'] == 'ends_with':
+                    query_string['operator'] = 'ilike'
+                    query_string['value'] = f"%{query_string['value']}"
+                if query_string['operator'] == 'contains':
+                    query_string['operator'] = 'ilike'
+                    query_string['value'] = f"%{query_string['value']}%"
+                if query_string['operator'] not in allowed_operators:
+                    return Response({"error":f"Please provide an approved operator. ({allowed_operators})"},status=status.HTTP_400_BAD_REQUEST)
+                if index == 0:                    
+                    query += sql.SQL(" WHERE {column} {operator} {value}").format(value=sql.Literal(query_string['value']),operator=sql.SQL(query_string['operator']),column=sql.Identifier(query_string['column']))
+                    count_query += sql.SQL(" WHERE {column} {operator} {value}").format(value=sql.Literal(query_string['value']),operator=sql.SQL(query_string['operator']),column=sql.Identifier(query_string['column']))
+                else:
+                    if query_string['combine_operator'] not in allowed_combine_operators:
+                        return Response({"error":f"Please provide an approved combine operator. ({allowed_combine_operators})"},status=status.HTTP_400_BAD_REQUEST)
+                    query += sql.SQL(" {combine_operator} {column} {operator} {value}").format(value=sql.Literal(query_string['value']),combine_operator=sql.SQL(query_string['combine_operator']),operator=sql.SQL(query_string['operator']),column=sql.Identifier(query_string['column']))
+                    count_query += sql.SQL(" {combine_operator} {column} {operator} {value}").format(value=sql.Literal(query_string['value']),combine_operator=sql.SQL(query_string['combine_operator']),operator=sql.SQL(query_string['operator']),column=sql.Identifier(query_string['column']))
+        
+        if 'search_term' in serializer.validated_data:
+            if 'where' in serializer.validated_data:
+                query += sql.SQL(" AND ")
+            else:
+                query += sql.SQL(" WHERE ")
+            query += sql.SQL("(title ilike '%{search_term}%' OR description ilike '%{search_term}%' OR tags::text ilike '%{search_term}%')").format(search_term=sql.SQL(serializer.validated_data['search_term']))
+       
+        if 'order_by_column' in serializer.validated_data and 'order_by_sort' in serializer.validated_data:
+            query += sql.SQL(" ORDER BY {order_by_column} {order_by_sort}").format(order_by_sort=sql.SQL(serializer.validated_data['order_by_sort']),order_by_column=sql.SQL(serializer.validated_data['order_by_column']))
+
+        if 'limit' in serializer.validated_data:
+            query += sql.SQL(" LIMIT {limit}").format(limit=sql.SQL(str(serializer.validated_data['limit'])))
+        else:
+            query += sql.SQL(" LIMIT {limit}").format(limit=sql.SQL(str(settings.MAX_FEATURES_PER_TILE)))
+
+        if 'offset' in serializer.validated_data:
+            query += sql.SQL(" OFFSET {offset}").format(offset=sql.SQL(str(serializer.validated_data['offset'])))
+
+        conn = psycopg2.connect(database=data_db, user=api_db_user, password=api_db_pwd, host=api_db_host, options="-c search_path=public")
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute(query)
+        results = []
+        for item in cur.fetchall():
+            if item['searchable']:
+                results.append(item)
+            else:
+                for access in item['access_list']:
+                    if access in user_groups:
+                        results.append(item)
+        data = {
+            "results": results
+        }
+        cur.execute(count_query)
+        count_data = cur.fetchone()
+        data['number_of_results'] = count_data['count']
+        data['number_of_results_returned'] = len(data['results'])
+
+        cur.close()
+        conn.close()
+
+        return Response(data)
 # Break Values
 
 # Download Data

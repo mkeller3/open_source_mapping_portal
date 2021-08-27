@@ -292,12 +292,6 @@ export default {
   height: 100%;
 }
 
-#app,
-html,
-.v-main {
-  height: 100vh !important;
-}
-
 html {
   overflow: hidden;
 }
