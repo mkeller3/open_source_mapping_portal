@@ -1,0 +1,9 @@
+name: mapping-portal-dev
+image: okteto/node:12
+build:
+  target: dev
+command:
+  - sh
+workdir: /usr/src/app
+forward:
+  - 9229:9229
