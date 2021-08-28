@@ -38,6 +38,3 @@ FROM nginx:stable-alpine
 
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=dev /app/dist /usr/share/nginx/html
-COPY entrypoint.sh /
-
-CMD ["/entrypoint.sh"]
