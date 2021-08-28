@@ -40,5 +40,5 @@ FROM nginx:alpine as prod
 COPY --from=dev /usr/src/app/dist /app
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx/nginx.conf /etc/nginx/conf.d
-EXPOSE 80
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
