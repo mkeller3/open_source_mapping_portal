@@ -1,4 +1,0 @@
-deploy:
-  - okteto build -t okteto.dev/ui:${OKTETO_GIT_COMMIT} ui
-devs:
-  - ui/okteto.yml

@@ -1,9 +1,11 @@
-name: mapping-portal-dev
+name: recipes-frontend
+labels:
+  app.kubernetes.io/component: frontend
 image: okteto/node:12
-build:
-  target: dev
-command:
-  - sh
-workdir: /usr/src/app
-forward:
-  - 9229:9229
+command: bash
+sync:
+- .:/usr/src/app
+resources:
+  limits:
+    cpu: "1"
+    memory: 2Gi
