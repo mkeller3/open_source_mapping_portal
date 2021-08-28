@@ -44,5 +44,5 @@ RUN npm run build
 # CMD ["nginx", "-g", "daemon off;"]
 
 FROM bitnami/nginx as prod
-COPY --from=dev /usr/src/app/dist /app
+COPY --from=dev /usr/src/app/dist /usr/share/nginx/html
 COPY nginx/nginx.conf opt/bitnami/nginx/conf/server_blocks/nginx.conf
