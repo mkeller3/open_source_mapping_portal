@@ -43,6 +43,5 @@ RUN npm run build
 # EXPOSE 8080
 # CMD ["nginx", "-g", "daemon off;"]
 
-FROM nginx:alpine as prod
+FROM bitnami/nginx as prod
 COPY --from=dev /usr/src/app/dist /app
-
