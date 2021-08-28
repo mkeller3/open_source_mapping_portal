@@ -7,6 +7,8 @@ Open Source Mapping Portal is a mapping portal that allow users to create maps, 
 
 The front end of the application is in the ui folder. 
 
+It is currently deployed at [this link](https://mapping-portal-mkeller3.cloud.okteto.net/).
+
 
 #### Vue JS
 ![Vue JS Logo](https://avatars.githubusercontent.com/u/6128107?s=200&v=4)
