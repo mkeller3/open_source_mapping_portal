@@ -36,9 +36,13 @@ RUN npm install @vue/cli@3.7.0 -g
 COPY . .
 RUN npm run build
 
+# FROM nginx:alpine as prod
+# COPY --from=dev /usr/src/app/dist /app
+# RUN rm /etc/nginx/conf.d/default.conf
+# COPY nginx/nginx.conf /etc/nginx/conf.d
+# EXPOSE 8080
+# CMD ["nginx", "-g", "daemon off;"]
+
 FROM nginx:alpine as prod
 COPY --from=dev /usr/src/app/dist /app
-RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx/nginx.conf /etc/nginx/conf.d
-EXPOSE 8080
-# CMD ["nginx", "-g", "daemon off;"]
+
