@@ -1,6 +1,6 @@
-name: recipes-ui
+name: recipes-frontend
 labels:
-  app.kubernetes.io/component: ui
+  app.kubernetes.io/component: frontend
 image: okteto/node:12
 command: bash
 sync:
