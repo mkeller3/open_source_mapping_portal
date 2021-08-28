@@ -1,12 +1,12 @@
 # build environment
-FROM node:12.2.0-alpine as build
-WORKDIR /app
-ENV PATH /app/node_modules/.bin:$PATH
-COPY package.json /app/package.json
-RUN npm install --silent
-RUN npm install @vue/cli@3.7.0 -g
-COPY . /app
-RUN npm run build
+# FROM node:12.2.0-alpine as build
+# WORKDIR /app
+# ENV PATH /app/node_modules/.bin:$PATH
+# COPY package.json /app/package.json
+# RUN npm install --silent
+# RUN npm install @vue/cli@3.7.0 -g
+# COPY . /app
+# RUN npm run build
 
 # production environment
 # FROM nginx:alpine
@@ -15,5 +15,13 @@ RUN npm run build
 # COPY nginx/nginx.conf /etc/nginx/conf.d
 # EXPOSE 80
 # CMD ["nginx", "-g", "daemon off;"]
+
+FROM node:12 as dev
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install --silent
+COPY . .
+RUN npm run build
+
 FROM bitnami/nginx as prod
-COPY --from=dev /app/dist /app
+COPY --from=dev /usr/src/app/dist /app
