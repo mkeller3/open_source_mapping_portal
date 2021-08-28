@@ -1,5 +1,18 @@
+# version: "3.7"
+# name: recipes
+# services:
+#   ui:
+#     build: ui
+#     ports:
+#       - 8080:8080
+
+# endpoints:
+#   - path: /
+#     service: ui
+#     port: 8080
+
 version: "3.7"
-name: recipes
+name: mapping-portal
 services:
   ui:
     build: ui

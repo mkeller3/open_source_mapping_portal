@@ -1,4 +1,4 @@
-# name: recipes
+# name: recipes-ui
 # labels:
 #   app.kubernetes.io/component: ui
 # image: okteto/node:12
@@ -10,7 +10,7 @@
 #     cpu: "1"
 #     memory: 2Gi
 
-name: recipes-ui
+name: mapping-portal-ui
 labels:
   app.kubernetes.io/component: ui
 image: okteto/node:12
