@@ -17,9 +17,9 @@ services:
   ui:
     build: ui
     ports:
-      - 80:80
+      - 8080:8080
 
 endpoints:
   - path: /
     service: ui
-    port: 80
+    port: 8080
