@@ -1,4 +1,4 @@
-name: mapping-portal-ui
+name: recipes-ui
 labels:
   app.kubernetes.io/component: ui
 image: okteto/node:12
