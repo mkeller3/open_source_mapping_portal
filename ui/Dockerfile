@@ -23,7 +23,7 @@ FROM nginx:latest as prod
 COPY --from=dev /app/dist /usr/share/nginx/html/
 COPY nginx/nginx.conf etc/nginx/
 EXPOSE 8080
-CMD ["nginx", "-g", "dameon off;"]
+CMD ["nginx", "-g", "daemon off;"]
 
 # FROM bitnami/nginx as prod
 # COPY --from=dev /usr/src/app/dist /opt/bitnami/nginx/html/
