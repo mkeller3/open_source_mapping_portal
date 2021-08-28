@@ -1,4 +1,4 @@
-name: recipes-ui
+name: ui
 labels:
   app.kubernetes.io/component: ui
 image: okteto/node:12
