@@ -26,18 +26,18 @@
 # COPY nginx/nginx.conf opt/bitnami/nginx/conf/server_blocks/nginx.conf
 
 # First step: Build with Node.js
-FROM node:lts-alpine AS Builder
+FROM node:12 as dev
 WORKDIR /app
-COPY package.json yarn.lock /app/
-RUN yarn install
+COPY package.json /app
+RUN npm install --silent
 COPY . /app
-RUN yarn build
+RUN npm run build
 
 # Deliver the dist folder with Nginx
 FROM nginx:stable-alpine
 
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=Builder /app/dist /usr/share/nginx/html
+COPY --from=dev /app/dist /usr/share/nginx/html
 COPY entrypoint.sh /
 
 CMD ["/entrypoint.sh"]
