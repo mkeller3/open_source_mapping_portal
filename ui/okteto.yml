@@ -1,6 +1,18 @@
-name: recipes
+# name: recipes
+# labels:
+#   app.kubernetes.io/component: ui
+# image: okteto/node:12
+# command: bash
+# sync:
+# - .:/usr/src/app
+# resources:
+#   limits:
+#     cpu: "1"
+#     memory: 2Gi
+
+name: recipes-frontend
 labels:
-  app.kubernetes.io/component: ui
+  app.kubernetes.io/component: frontend
 image: okteto/node:12
 command: bash
 sync:

@@ -1,12 +1,12 @@
 version: "3.7"
 name: recipes
 services:
-  ui:
+  frontend:
     build: ui
     ports:
       - 8080:8080
 
 endpoints:
   - path: /
-    service: ui
+    service: frontend
     port: 8080
