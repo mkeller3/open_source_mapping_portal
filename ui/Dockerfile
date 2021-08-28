@@ -25,22 +25,19 @@
 # COPY --from=dev /usr/src/app/dist /app
 # COPY nginx/nginx.conf opt/bitnami/nginx/conf/server_blocks/nginx.conf
 
-ARG NODE_VERSION=latest
-ARG NGINX_VERSION=1.18.0
-FROM node:$NODE_VERSION as build
-
-WORKDIR /build
-COPY ./package*.json ./
-RUN [ "npm", "install", "-g", "@vue/cli" ]
-RUN [ "npm", "install" ]
-COPY ./src/ ./src/
-
-RUN [ "npm", "run", "build" ]
-
-FROM bitnami/nginx:$NGINX_VERSION
-
+# First step: Build with Node.js
+FROM node:lts-alpine AS Builder
 WORKDIR /app
+COPY package.json yarn.lock /app/
+RUN yarn install
+COPY . /app
+RUN yarn build
 
-COPY --from=build /build/dist .
+# Deliver the dist folder with Nginx
+FROM nginx:stable-alpine
 
-EXPOSE 8080
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=Builder /app/dist /usr/share/nginx/html
+COPY entrypoint.sh /
+
+CMD ["/entrypoint.sh"]

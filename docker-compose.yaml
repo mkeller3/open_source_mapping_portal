@@ -18,8 +18,6 @@ services:
     build: ui
     ports:
       - 8080:8080
-    volumes:
-      - ./nginx/nginx.conf:/opt/bitnami/nginx/conf/server_blocks/nginx.conf
 
 endpoints:
   - path: /
