@@ -40,7 +40,6 @@ RUN [ "npm", "run", "build" ]
 FROM bitnami/nginx:$NGINX_VERSION
 
 WORKDIR /app
-USER 1001
 
 COPY --from=build /build/dist .
 
