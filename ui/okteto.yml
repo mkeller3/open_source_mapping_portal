@@ -10,9 +10,9 @@
 #     cpu: "1"
 #     memory: 2Gi
 
-name: recipes-frontend
+name: recipes-ui
 labels:
-  app.kubernetes.io/component: frontend
+  app.kubernetes.io/component: ui
 image: okteto/node:12
 command: bash
 sync:
