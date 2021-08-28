@@ -45,3 +45,5 @@ RUN npm run build
 
 FROM bitnami/nginx as prod
 COPY --from=dev /usr/src/app/dist /app
+RUN rm /opt/bitnami/nginx/nginx.conf 
+COPY nginx/nginx.conf /opt/bitnami/nginx/
