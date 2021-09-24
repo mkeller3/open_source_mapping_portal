@@ -27,6 +27,6 @@ endpoints:
   # - path: /
   #   service: ui
   #   port: 8080
-  - path: /api/
+  - path: /
     service: api
     port: 8888
