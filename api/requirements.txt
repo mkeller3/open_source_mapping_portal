@@ -38,4 +38,5 @@ toml==0.10.2
 tzlocal==3.0
 uritemplate==3.0.1
 urllib3==1.26.5
+whitenoise==5.3.0
 xmltodict==0.12.0
