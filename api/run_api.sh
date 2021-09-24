@@ -1,10 +1,9 @@
 #!/bin/sh
 
-
 cd portal_api
 
 # prepare init migration
-python manage.py makemigrations myproject
+python manage.py makemigrations portal_api
 echo "Created migrations"
 # migrate db, so we have the latest db schema
 python manage.py migrate
