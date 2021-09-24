@@ -22,4 +22,5 @@ COPY . /usr/src/app
 
 EXPOSE 8888
 
-CMD gunicorn api.wsgi:application --bind 0.0.0.0:8888 --timeout 320 --workers 1
+# CMD gunicorn api.wsgi:application --bind 0.0.0.0:8888 --timeout 360 --workers 1
+CMD ["gunicorn", "--chdir", "api", "--bind", ":8888", "api.wsgi:application"]
