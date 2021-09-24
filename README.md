@@ -25,6 +25,8 @@ It also uses [MapLibre JS](https://github.com/maplibre/maplibre-gl-js) to render
 ## Back End
 The backend of the application is in the api folder. 
 
+API docs in [ReDoc](https://api-mkeller3.cloud.okteto.net/redoc/) and [Swagger](https://api-mkeller3.cloud.okteto.net/swagger/).
+
 #### Django
 
 ![Django Logo](https://avatars.githubusercontent.com/u/27804?s=200&v=4)
