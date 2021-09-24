@@ -1,12 +1,16 @@
 <template>
-  <div id="maplibre-map"></div>
+  <div id="maplibre-map">
+    <alert :appData="appData"/>
+  </div>
 </template>
 
 <script>
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import Alert from './Alert.vue';
 
 export default {
+  components: { Alert },
   name: "Map",
   props: {
     appData: Object,

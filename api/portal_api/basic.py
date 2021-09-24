@@ -13,10 +13,12 @@ from django.core.exceptions import ObjectDoesNotExist
 class userSearchView(LoggingMixin, APIView):
     permission_classes = (IsAuthenticated),
 
-    @swagger_auto_schema(operation_description="Search for users within Mapping Portal")
+    @swagger_auto_schema(query_serializer=defaultSearchSerializer, operation_description="Search for users within Mapping Portal")
     def get(self, request):
+        serializer = defaultSearchSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
         try:
-            details = User.objects.filter(username__startswith=request.GET.get('search')).values('username', 'email')
+            details = User.objects.filter(username__icontains=serializer.validated_data['search']).values('username', 'email')
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = userSearchSerializer(details, many=True)
@@ -26,10 +28,12 @@ class userSearchView(LoggingMixin, APIView):
 class groupSearchView(LoggingMixin, APIView):
     permission_classes = (IsAuthenticated),
 
-    @swagger_auto_schema(operation_description="Search for groups within Mapping Portal")
+    @swagger_auto_schema(query_serializer=defaultSearchSerializer, operation_description="Search for groups within Mapping Portal")
     def get(self, request):
+        serializer = defaultSearchSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
         try:
-            details = groupData.objects.filter(group_name__startswith=request.GET.get('search')).values('group_name', 'group_id')
+            details = groupData.objects.filter(group_name__icontains=serializer.validated_data['search']).values('group_name', 'group_id')
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = groupSearchSerializer(details, many=True)
@@ -97,3 +101,31 @@ class allGroupsView(APIView):
         details = groupData.objects.filter(users__contains=request.user.username)        
         serializer = groupDataSerializer(details, many=True)
         return Response(serializer.data)
+
+class globalSearchView(LoggingMixin, APIView):
+    permission_classes = (IsAuthenticated),
+
+    @swagger_auto_schema(operation_description="Search for users/groups within Mapping Portal")
+    def get(self, request):
+        serializer = defaultSearchSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+        try:
+            group_details = groupData.objects.filter(group_name__icontains=serializer.validated_data['search']).values('group_name', 'group_id')
+            user_details = User.objects.filter(username__icontains=serializer.validated_data['search']).values('username')
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        results = []
+        if len(group_details) > 0:
+            for group in group_details:
+                results.append({
+                    "title": group.group_name,
+                    "value": group.group_id
+                })
+        if len(user_details) > 0:
+            for user in user_details:
+                results.append({
+                    "title": user['username'],
+                    "value": user['username']
+                })
+
+        return Response(results)

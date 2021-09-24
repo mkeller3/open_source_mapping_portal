@@ -343,3 +343,7 @@ class portalSearchSerializer(serializers.Serializer):
     offset = serializers.IntegerField(required=False)
     order_by_sort = serializers.ChoiceField(required=False, choices=order_by_choices)
     order_by_column = serializers.CharField(required=False)
+
+class defaultSearchSerializer(serializers.Serializer):
+
+    search = serializers.CharField()

@@ -82,12 +82,20 @@ export default {
       longitude: -96,
       zoom: 3,
       basemap: "dark",
+      layers: [],
+      notification_access_list: [],
+      write_access_list: ["michaelkeller03"],
+      read_access_list: ["michaelkeller03"],
+      updated_username: "michaelkeller03",
+      username: "michaelkeller03",
+      searchable: true,
       openRightIcon: undefined,
       openRightPanel: undefined,
       openLeftIcon: undefined,
       openLeftPanel: undefined,
-      layers: [],
-      searchForLayers: false
+      savedMap: false,
+      searchForLayers: false,
+      activeLayerId: undefined,
     },
     left_nav_items: [
       {
@@ -231,12 +239,35 @@ export default {
   }),
   mounted(){
     document.title = 'Mapping Portal | Map Builder'
-    console.log(localStorage.getItem('mapping_portal_access_token') )
     if(localStorage.getItem('mapping_portal_access_token') === null){
       this.$router.push({ name: 'Login', query: { redirect: `${window.location.pathname}${window.location.search}` } });
     }
     if(this.$route.query.map_id){
-        console.log('old map')
+      this.globalFunctions
+        .httpRequest(
+          "get",
+          `${this.apiUrl}/api/v1/maps/map/?map_id=${this.$route.query.map_id}`,
+          undefined,
+          true
+        )
+        .then((res) => {
+          if(res.status != 200){
+            this.$set(this.appData, 'alertColor', 'red')
+            if(res.status == 404){
+              this.$set(this.appData, 'alert', "Sorry, we cannot find this map.")
+            } else if(res.status == 401){
+              this.$set(this.appData, 'alert', "Sorry, you do not have access to this map.")
+            }else{
+              this.$set(this.appData, 'alert', res.data)
+            }            
+            return;
+          }
+          for(let prop in res.data) {
+            console.log(prop)
+            this.$set(this.appData, prop, res.data[prop]);
+          }
+          console.log(this.appData)
+        })
     }
   },
   methods: {
@@ -292,7 +323,7 @@ export default {
       if(icon.slug === 'new_map'){
         document.location.href = '/map_builder/'
       }
-      if(icon.slug === 'print'){
+      else if(icon.slug === 'print'){
         // TODO
         console.log(this.appData.map.getCanvas().toDataURL())
         var a = document.createElement('a');
@@ -300,6 +331,9 @@ export default {
         a.href = this.appData.map.getCanvas().toDataURL();
         document.body.appendChild(a);
         a.click()
+      }
+      else if(icon.slug === 'save_map'){
+        this.$set(this.appData, 'saveMapDialog', true)
       }
     },
   },

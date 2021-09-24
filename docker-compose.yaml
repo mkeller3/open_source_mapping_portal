@@ -18,8 +18,15 @@ services:
     build: ui
     ports:
       - 8080:8080
+  api:
+    build: api
+    ports:
+      - 8888:8888
 
 endpoints:
   - path: /
     service: ui
     port: 8080
+  - path: /api/
+    service: api
+    port: 8888

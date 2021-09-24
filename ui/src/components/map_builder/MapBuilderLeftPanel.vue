@@ -36,6 +36,7 @@
       :appData="appData"
       v-if="this.appData.openLeftIcon === 'settings'"
     />
+    <map-builder-modal-save-map :appData="appData"/>
   </div>
 </template>
 
@@ -47,6 +48,7 @@ import MapBuilderHelpPanel from "./MapBuilderHelpPanel.vue";
 import MapBuilderLayersSearchPanel from "./MapBuilderLayersSearchPanel.vue";
 import MapBuilderLegendPanel from "./MapBuilderLegendPanel.vue";
 import MapBuilderMapSearchPanel from "./MapBuilderMapSearchPanel.vue";
+import MapBuilderModalSaveMap from './MapBuilderModalSaveMap.vue';
 import MapBuilderQueryDataPanel from "./MapBuilderQueryDataPanel.vue";
 import MapBuilderSettingsPanel from "./MapBuilderSettingsPanel.vue";
 
@@ -61,6 +63,7 @@ export default {
     MapBuilderMapSearchPanel,
     MapBuilderQueryDataPanel,
     MapBuilderSettingsPanel,
+    MapBuilderModalSaveMap,
   },
   name: "MapBuilderLeftPanel",
   props: {

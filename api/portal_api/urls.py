@@ -19,6 +19,7 @@ urlpatterns = [
     path('basic/groups/', views.allGroupsView.as_view(), name='groups'),
     path('basic/user_search/', views.userSearchView.as_view(), name='user_search'),
     path('basic/group_search/', views.groupSearchView.as_view(), name='group_search'),
+    path('basic/global_search/', views.globalSearchView.as_view(), name='global_search'),
     path('import/import_geographic_file/', views.importGeographicFileView.as_view(), name='import_geographic_file'),
     path('import/import_point_file/', views.importPointFileView.as_view(), name='import_point_file'),
     path('import/esri_service/', views.importEsriUrlView.as_view(), name='esri_service'),

@@ -24,6 +24,7 @@ userSearchView = basic.userSearchView
 groupSearchView = basic.groupSearchView
 groupView = basic.groupView
 allGroupsView = basic.allGroupsView
+globalSearchView = basic.globalSearchView
 
 # Administration API
 mapServiceConfigurationView = administration.mapServiceConfigurationView
