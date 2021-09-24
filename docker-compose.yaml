@@ -14,19 +14,19 @@
 version: "3.7"
 name: mapping-portal
 services:
-  # ui:
-  #   build: ui
-  #   ports:
-  #     - 8080:8080
+  ui:
+    build: ui
+    ports:
+      - 8080:8080
   api:
     build: api
     ports:
       - 8888:8888
 
 endpoints:
-  # - path: /
-  #   service: ui
-  #   port: 8080
+  - path: /
+    service: ui
+    port: 8080
   - path: /
     service: api
     port: 8888

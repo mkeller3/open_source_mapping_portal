@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 from portal_api import constants
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,7 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 's&3+0endvm@j_)zn%p1(34723=m4c8gr%a-)j896o-ao7j=q2z'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if constants.production:
+    DEBUG = False
+else:
+    DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 MAX_NUMBER_OF_API_RESULTS = 500

@@ -5,8 +5,10 @@ print(f"Running api on server: {socket.gethostname()}")
 
 if socket.gethostname() == 'michael-laptop':
     api_db_host = 'localhost'
+    production = False
 else:
     api_db_host = 'postgresql.mkeller3.svc.cluster.local'
+    production = True
 
 api_db = 'mapping_portal'
 api_db_user = 'postgres'

@@ -1,6 +1,11 @@
 import axios from "axios";
 
-const apiUrl = "http://0.0.0.0:8050";
+let apiUrl = "";
+if(window.location.href.includes('localhost')){
+  apiUrl = 'http://0.0.0.0:8050'
+}else{
+  apiUrl = 'https://api-mkeller3.cloud.okteto.net'
+}
 
 export const globalFunctions = {
   httpRequest: (
