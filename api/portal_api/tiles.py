@@ -29,7 +29,7 @@ class tilesView(APIView):
 
     renderer_classes = (BinaryRenderer,)
 
-    @swagger_auto_schema(query_serializer=genericMapSerializer, operation_description="Get vector tiles for map")
+    @swagger_auto_schema(operation_description="Get vector tiles for map")
     def get(self, request, database, table_name, z, x, y):
         try:    
 

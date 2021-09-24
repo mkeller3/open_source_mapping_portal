@@ -25,4 +25,7 @@ COPY . /usr/src/app
 EXPOSE 8888
 
 # Start with gunicorn
-CMD ["gunicorn", "--chdir", "api", "--bind", ":8888", "--workers", "1", "--timeout", "360", "api.wsgi:application"]
+# CMD ["gunicorn", "--chdir", "api", "--bind", ":8888", "--workers", "1", "--timeout", "360", "api.wsgi:application"]
+
+# Start sh file
+CMD ["./run_api.sh"]
