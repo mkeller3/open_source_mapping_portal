@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd /usr/src/app/portal_api
+cd /usr/src/app
 
 # prepare init migration
 python manage.py makemigrations portal_api
