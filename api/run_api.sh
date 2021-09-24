@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd portal_api
+cd /usr/src/app/portal_api
 
 # prepare init migration
 python manage.py makemigrations portal_api
@@ -11,4 +11,4 @@ echo "Migrated DB to latest version"
 # start development server on public ip interface, on port 8080
 # python manage.py runserver 0.0.0.0:8080
 # start server on port 888
-gunicorn --chdir api --bind :8888 --workers 1 --timeout 360 api.wsgi:application
+gunicorn --chdir /usr/src/app/api --bind :8888 --workers 1 --timeout 360 api.wsgi:application
