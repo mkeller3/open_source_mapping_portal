@@ -6,7 +6,10 @@
 export default {
   name: "MapBuilderLayerInformationPanel",
   props: {
-    appData: Object,
+    appData: {
+     type: Object,
+      required: true
+}
   },
 };
 </script>

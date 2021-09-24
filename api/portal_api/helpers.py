@@ -299,16 +299,16 @@ def sqlToPbf(database, table_name, z, x, y, fields):
         database=database
     )
 
-    if database == 'user_data':
-        ps_connection = user_data_db_pool.getconn()
+    # if database == 'user_data':
+    ps_connection = user_data_db_pool.getconn()
 
-        if ps_connection:
-            cur = ps_connection.cursor()
-            cur.execute(sql_query)
-            tile = cur.fetchall()[-1][-1]
+    if ps_connection:
+        cur = ps_connection.cursor()
+        cur.execute(sql_query)
+        tile = cur.fetchall()[-1][-1]
 
-            if database == 'user_data':
-                user_data_db_pool.putconn(ps_connection)
+        # if database == 'user_data':
+        user_data_db_pool.putconn(ps_connection)
 
     return tile
 

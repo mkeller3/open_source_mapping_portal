@@ -1,12 +1,18 @@
 <template>
-  <p>Layer Search</p>
+<div>
+  <h2>Layers</h2>
+  <v-divider/>
+</div>
 </template>
 
 <script>
 export default {
   name: "MapBuilderLayerSearchPanel",
   props: {
-    appData: Object,
+    appData: {
+     type: Object,
+      required: true
+}
   },
 };
 </script>

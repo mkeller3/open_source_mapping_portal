@@ -86,7 +86,7 @@ class tableImageView(LoggingMixin, APIView):
         serializer = genericTableSerializer(data=request.GET)
         serializer.is_valid(raise_exception=True)
         try:
-            details = tableData.objects.get(table_id=serializer.validated_data['table_id'])
+            details = tableData.objects.get(table_id=serializer.validated_data['table_id']).image
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = tableDataImageSerializer(details)

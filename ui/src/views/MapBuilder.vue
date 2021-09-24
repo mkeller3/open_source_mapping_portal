@@ -28,11 +28,11 @@
         </v-navigation-drawer>
       </v-row>
     </v-navigation-drawer>
-    <map-builder-left-panel :appData="appData" />
+    <map-builder-left-panel :appData="appData" style="max-width: 25%"/>
     <v-col align-self="auto" class="map-panel">
       <Map :appData="appData" />
     </v-col>
-    <map-builder-right-panel :appData="appData" />
+    <map-builder-right-panel :appData="appData" style="max-width: 25%"/>
     <v-navigation-drawer fluid expand-on-hover permanent right>
       <v-row class="fill-height" no-gutters fluid>
         <v-navigation-drawer
@@ -81,11 +81,13 @@ export default {
       latitude: 40,
       longitude: -96,
       zoom: 3,
-      basemap: "light",
+      basemap: "dark",
       openRightIcon: undefined,
       openRightPanel: undefined,
       openLeftIcon: undefined,
       openLeftPanel: undefined,
+      layers: [],
+      searchForLayers: false
     },
     left_nav_items: [
       {
@@ -229,6 +231,10 @@ export default {
   }),
   mounted(){
     document.title = 'Mapping Portal | Map Builder'
+    console.log(localStorage.getItem('mapping_portal_access_token') )
+    if(localStorage.getItem('mapping_portal_access_token') === null){
+      this.$router.push({ name: 'Login', query: { redirect: `${window.location.pathname}${window.location.search}` } });
+    }
     if(this.$route.query.map_id){
         console.log('old map')
     }
@@ -281,6 +287,19 @@ export default {
             this.$set(this.appData, "openRightPanel", false);
           }
         }
+      }
+      console.log(icon.slug )
+      if(icon.slug === 'new_map'){
+        document.location.href = '/map_builder/'
+      }
+      if(icon.slug === 'print'){
+        // TODO
+        console.log(this.appData.map.getCanvas().toDataURL())
+        var a = document.createElement('a');
+        a.download = 'map.png';
+        a.href = this.appData.map.getCanvas().toDataURL();
+        document.body.appendChild(a);
+        a.click()
       }
     },
   },

@@ -84,7 +84,7 @@ class portalTablesView(LoggingMixin, APIView):
         
         if 'search' in serializer.validated_data:
             search_term = serializer.validated_data['search']
-            map_services = mapServiceData.objects.filter(Q(display_name_icontains=search_term)|Q(description_icontains=search_term))
+            map_services = mapServiceData.objects.filter(Q(display_name__icontains=search_term)|Q(description__icontains=search_term))
         else:
             map_services = mapServiceData.objects.all()
 

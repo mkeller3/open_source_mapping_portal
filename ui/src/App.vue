@@ -6,6 +6,10 @@
         class="mr-3"
       ></v-app-bar-nav-icon>
       <h2>Mapping Portal</h2>
+      <v-spacer></v-spacer>
+      <v-btn text v-if="!authenicated" href="/register"> Register</v-btn>
+      <v-btn text v-if="!authenicated" href="/login"> Login</v-btn>
+      <v-btn text v-if="authenicated" @click="logout()"> Logout</v-btn>
     </v-app-bar>
     <v-main>
       <router-view />
@@ -47,6 +51,7 @@ export default {
   name: "App",
   data: () => ({
     drawer: false,
+    authenicated: false,
     urls: [
       {
         title: "Home",
@@ -69,17 +74,25 @@ export default {
         url: "/creator/",
       },
     ],
-  })
+  }),
+  mounted() {
+    if(localStorage.getItem('mapping_portal_access_token')){
+      this.authenicated = true
+    }
+  },
+  methods:{
+    logout(){
+      localStorage.removeItem('mapping_portal_access_token')
+      window.location.href = "/"
+    }
+  }
 };
 </script>
 
 <style>
-
 #app,
 html,
 .v-main {
   height: 100vh !important;
 }
-
-
 </style>

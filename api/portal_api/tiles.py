@@ -12,6 +12,7 @@ from django.db.models import Q
 from functools import reduce
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework_tracking.mixins import LoggingMixin
+import sys
 
 class BinaryRenderer(BaseRenderer):
     media_type = "application/*"
@@ -44,6 +45,7 @@ class tilesView(APIView):
                 bytes(pbf), content_type="application/vnd.mapbox-vector-tile", status=statusCode
             )
         except Exception as e:
+            print(e)
             exc_type, exc_obj, exc_tb = sys.exc_info()           
             return Response({
                 "error":str(e),

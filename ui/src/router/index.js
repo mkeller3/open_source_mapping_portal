@@ -16,6 +16,11 @@ const routes = [
     component: () => import('../views/Login.vue')
   },
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('../views/Register.vue')
+  },
+  {
     path: '/about',
     name: 'About',
     component: () => import('../views/About.vue')
@@ -29,6 +34,11 @@ const routes = [
     path: '/portal_search',
     name: 'Portal Search',
     component: () => import('../views/PortalSearch.vue')
+  },
+  {
+    path: '/project',
+    name: 'PProject',
+    component: () => import('../views/Project.vue')
   }
 ]
 

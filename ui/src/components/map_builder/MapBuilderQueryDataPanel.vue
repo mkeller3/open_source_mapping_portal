@@ -6,7 +6,10 @@
 export default {
   name: "MapBuilderQueryDataPanel",
   props: {
-    appData: Object,
+    appData: {
+     type: Object,
+      required: true
+}
   },
 };
 </script>

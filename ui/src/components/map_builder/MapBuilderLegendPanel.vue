@@ -6,7 +6,10 @@
 export default {
   name: "MapBuilderLegendPanel",
   props: {
-    appData: Object,
+    appData: {
+     type: Object,
+      required: true
+}
   },
 };
 </script>

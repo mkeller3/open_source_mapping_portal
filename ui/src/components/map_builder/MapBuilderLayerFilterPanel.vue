@@ -6,7 +6,10 @@
 export default {
   name: "MapBuilderLayerFilterPanel",
   props: {
-    appData: Object,
+    appData: {
+     type: Object,
+      required: true
+}
   },
 };
 </script>

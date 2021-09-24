@@ -51,7 +51,10 @@ export default {
   },
   name: "MapBuilderRightPanel",
   props: {
-    appData: Object,
+    appData: {
+     type: Object,
+      required: true
+}
   },
 };
 </script>

@@ -64,7 +64,10 @@ export default {
   },
   name: "MapBuilderLeftPanel",
   props: {
-    appData: Object,
+    appData: {
+     type: Object,
+      required: true
+}
   },
 };
 </script>
