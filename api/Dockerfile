@@ -29,4 +29,4 @@ EXPOSE 8888
 
 
 # Start sh file
-CMD ["./usr/src/app/run_api.sh"]
+ENTRYPOINT ["sh", "/usr/src/app/run_api.sh"]
