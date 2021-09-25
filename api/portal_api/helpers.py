@@ -63,6 +63,14 @@ def add_table_into_mapping_portal(table_information):
     cur.execute(sql.SQL("SELECT COUNT(*) FROM {table};").format(table=sql.SQL(table_information['table_id'])))
     results = cur.fetchone()
     table_information['rows'] = results['count']
+    cur.execute(sql.SQL("SELECT ST_GeometryType(geom) FROM {table}").format(table=sql.SQL(table_information['table_id'])))
+    geom_type = cur.fetchone()
+    if 'point' in geom_type['st_geometrytype'].lower():
+        table_information['geometry_type'] = 'point'
+    if 'polygon' in geom_type['st_geometrytype'].lower():
+        table_information['geometry_type'] = 'polygon'
+    if 'line' in geom_type['st_geometrytype'].lower():
+        table_information['geometry_type'] = 'line'
     cur.close()
     conn.close()
 

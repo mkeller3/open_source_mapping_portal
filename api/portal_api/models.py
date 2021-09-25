@@ -39,7 +39,7 @@ class tableData(models.Model):
     description = models.TextField()
     read_access_list = models.JSONField()
     write_access_list = models.JSONField()
-    notification_access_list = models.JSONField()
+    notification_access_list = models.JSONField(null=True)
     views = models.IntegerField(default=1)
     searchable = models.BooleanField(default=True)
     style = models.JSONField(null=True)

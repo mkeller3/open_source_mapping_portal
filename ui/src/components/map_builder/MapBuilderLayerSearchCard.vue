@@ -67,38 +67,39 @@ export default {
       if (this.layer.map_type === "user_data") {
         if (this.layer.geometry_type === "point") {
           this.layer.paint = {
-            "circle-color": "#fff",
+            "circle-color": "#FFE633",
           };
         } else if (this.layer.geometry_type === "line") {
           this.layer.paint = {
-            "line-color": "#fff",
+            "line-color": "#FFE633",
           };
         } else if (this.layer.geometry_type === "polygon") {
           this.layer.border_paint = {
-            "line-color": "#fff",
+            "line-color": "#4D4C41",
           };
 
           this.layer.fill_paint = {
-            "fill-color": "#fff",
+            "fill-color": "#FFE633",
+            "fill-opacity": 0.3
           };
         }
       } else if (this.layer.map_type === "map_layer") {
         if (this.layer.geometry_type === "point") {
           this.layer.paint = {
-            "circle-color": "#fff",
+            "circle-color": "#FFE633",
           };
         } else if (this.layer.geometry_type === "line") {
           this.layer.paint = {
-            "line-color": "#fff",
+            "line-color": "#FFE633",
           };
         } else if (this.layer.geometry_type === "polygon") {
           this.layer.border_paint = {
-            "line-color": "#000",
+            "line-color": "#4D4C41",
           };
 
           this.layer.fill_paint = {
-            "fill-color": "#000",
-            "fill-opacity": 0.8
+            "fill-color": "#FFE633",
+            "fill-opacity": 0.3
           };
         }
       }
